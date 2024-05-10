@@ -156,30 +156,32 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  bool  isOperator(value) {
-    if (value == '+' || value == '-' || value == 'x' || value == '\\') {
+  bool  isOperator(String value) {
+    if (value == '+' || value == '-' || value == 'x' || value == '/' || value == '.') {
       return true;
     }
     return false;
   }
 
-  bool  isNumeric(value) {
-    if (value.isNumeric) {
+  bool  isNumeric(String value) {
+    int nb = int.parse(value);
+
+    if ((nb >= 0 && nb <= 9)) {
       return true;
     }
     return false;
   }
 
-
-  // Add an implementation to check if a number is present before to add an operator at the next
   void  calculate(String btnTxt) {
     if (btnTxt != '=' && btnTxt != 'AC' && btnTxt != 'C') {
-      if (isOperator(btnTxt)) {
-        if (value.isNotEmpty && isNumeric(value[value.length - 1])) {
+      if ((value.isEmpty && isOperator(btnTxt) == false && btnTxt != "00") || (value.isNotEmpty)) {
+        if (value.isNotEmpty && (isOperator(value[value.length - 1]) && !isNumeric(btnTxt))) {
+          throw ExceptionInput("You can't have two operator at once");
+        } else { 
           value += btnTxt;
         }
       } else {
-        value += btnTxt;
+        throw ExceptionInput("There is an issue in your input");
       }
     } else if (btnTxt == 'AC') {
       value = '';
@@ -188,7 +190,7 @@ class _MyHomePageState extends State<MyHomePage> {
       if (value.isNotEmpty) {
         value = value.substring(0, value.length - 1);
       }
-    } else {
+    } else if (btnTxt == '=' && value.length > 1 && (value.indexOf("+") > 0 || value.indexOf("/") > 0 || value.indexOf("x") > 0 || value.indexOf("-") > 0)) {
       String  finalResult = value;
       finalResult = value.replaceAll('x', '*');
 
@@ -200,4 +202,10 @@ class _MyHomePageState extends State<MyHomePage> {
       result = eval.toString();
     }
   }
+}
+
+class ExceptionInput implements Exception {
+  final String  message;
+
+  ExceptionInput(this.message);
 }
