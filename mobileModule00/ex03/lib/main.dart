@@ -1,5 +1,8 @@
+import 'dart:js_interop';
+
 import 'package:flutter/material.dart';
 import 'buttons.dart';
+// import 'dart:math';
 import 'package:math_expressions/math_expressions.dart';
 void main() {
   runApp(const MyApp());
@@ -36,6 +39,8 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   String value = "";
   String result = "0";
+  String  finalResult = '0';
+  bool  isDot = false;
 
   @override
   Widget build(BuildContext context) {
@@ -157,28 +162,37 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   bool  isOperator(String value) {
-    if (value == '+' || value == '-' || value == 'x' || value == '/' || value == '.') {
-      return true;
-    }
-    return false;
+    return ['+', '-', '/', 'x', '.'].contains(value);
   }
 
   bool  isNumeric(String value) {
-    int nb = int.parse(value);
-
-    if ((nb >= 0 && nb <= 9)) {
-      return true;
-    }
-    return false;
+    return int.tryParse(value) != null || value == '.';
   }
 
   void  calculate(String btnTxt) {
     if (btnTxt != '=' && btnTxt != 'AC' && btnTxt != 'C') {
-      if ((value.isEmpty && isOperator(btnTxt) == false && btnTxt != "00") || (value.isNotEmpty)) {
-        if (value.isNotEmpty && (isOperator(value[value.length - 1]) && !isNumeric(btnTxt))) {
-          throw ExceptionInput("You can't have two operator at once");
-        } else { 
-          value += btnTxt;
+      if (isNumeric(btnTxt) || isOperator(btnTxt)) {
+        if (finalResult.isEmpty && result.isNotEmpty && value.isEmpty && isOperator(btnTxt) && btnTxt != '.') {
+          value += result;
+          result = '';
+        }
+        if ((value.isEmpty && (btnTxt == '+' || btnTxt == 'x' || btnTxt == '/' || btnTxt == '.' || btnTxt == "00" || btnTxt == '0')) || 
+          (value.isNotEmpty && value[value.length - 1] == '.' && isOperator(btnTxt)) || 
+            (value.isNotEmpty && value[value.length - 1] == '-' && (btnTxt == 'x' || btnTxt == '/' || btnTxt == '-' || btnTxt == '.')) ||
+              (value.isNotEmpty && (value[value.length - 1] == '/' || value[value.length - 1] == '+' || value[value.length - 1] == 'x') && btnTxt == '.') ||
+                (value.isNotEmpty && value[value.length - 1] == '0' && isOperator(value[value.length - 2]) && !isOperator(btnTxt) && btnTxt == '.') ||
+                  (value.isNotEmpty && isOperator(value[value.length - 1]) && btnTxt == "00")) return ;
+        if (value.isEmpty || value.isEmpty && btnTxt == '-') {
+          value = btnTxt;
+        } else if (value.isNotEmpty && (isNumeric(btnTxt) || isOperator(btnTxt))) {
+          if ((isNumeric(value[value.length - 1]) && isNumeric(btnTxt)) || 
+            (isNumeric(value[value.length - 1]) && isOperator(btnTxt)) || 
+              (isOperator(value[value.length - 1]) && isNumeric(btnTxt))) {
+                value += btnTxt;
+          }
+          else if (value[value.length - 1] == '+' && btnTxt == '-') {
+            value += btnTxt;
+          }
         }
       } else {
         throw ExceptionInput("There is an issue in your input");
@@ -190,8 +204,8 @@ class _MyHomePageState extends State<MyHomePage> {
       if (value.isNotEmpty) {
         value = value.substring(0, value.length - 1);
       }
-    } else if (btnTxt == '=' && value.length > 1 && (value.indexOf("+") > 0 || value.indexOf("/") > 0 || value.indexOf("x") > 0 || value.indexOf("-") > 0)) {
-      String  finalResult = value;
+    } else if (btnTxt == '=' && value.length > 1 && !isOperator(value[value.length - 1]) && (value.indexOf("+") > 0 || value.indexOf("/") > 0 || value.indexOf("x") > 0 || value.indexOf("-") > 0)) {
+      finalResult = value;
       finalResult = value.replaceAll('x', '*');
 
       Parser  p = Parser();
@@ -199,7 +213,13 @@ class _MyHomePageState extends State<MyHomePage> {
       ContextModel  cm = ContextModel();
       double  eval = exp.evaluate(EvaluationType.REAL, cm);
       value = '';
-      result = eval.toString();
+      finalResult = '';
+      if (eval is int) {
+        result = eval.toString();
+      } else {
+        String  roundedValue = eval.toStringAsFixed(1);
+        result = roundedValue.toString();
+      }
     }
   }
 }
