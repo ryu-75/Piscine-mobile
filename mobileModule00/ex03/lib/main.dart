@@ -1,8 +1,5 @@
-import 'dart:js_interop';
-
 import 'package:flutter/material.dart';
 import 'buttons.dart';
-// import 'dart:math';
 import 'package:math_expressions/math_expressions.dart';
 void main() {
   runApp(const MyApp());
@@ -40,7 +37,7 @@ class _MyHomePageState extends State<MyHomePage> {
   String value = "";
   String result = "0";
   String  finalResult = '0';
-  bool  isDot = false;
+  int isOp = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -161,41 +158,80 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  bool  isOperator(String value) {
-    return ['+', '-', '/', 'x', '.'].contains(value);
+  bool isOperator(String value) {
+    return ['+', '-', '/', 'x'].contains(value);
   }
 
-  bool  isNumeric(String value) {
-    return int.tryParse(value) != null || value == '.';
+  bool isNumeric(String value) {
+    return double.tryParse(value) != null || value == '.';
   }
 
-  void  calculate(String btnTxt) {
+  void handleOperator(String btnTxt) {
+    if (finalResult.isEmpty &&
+        result.isNotEmpty &&
+        value.isEmpty &&
+        isOperator(btnTxt) &&
+        btnTxt != '.') {
+      value += result;
+      result = '';
+    }
+
+    if ((value.isEmpty &&
+            (btnTxt == '+' ||
+                btnTxt == 'x' ||
+                btnTxt == '/' ||
+                btnTxt == '.' ||
+                btnTxt == "00" ||
+                btnTxt == '0')) ||
+        (value.isNotEmpty &&
+            value.endsWith('.') &&
+            isOperator(btnTxt)) ||
+        (value.isNotEmpty &&
+            value.endsWith('-') &&
+            (btnTxt == 'x' || btnTxt == '/' || btnTxt == '-' || btnTxt == '.')) ||
+        (value.isNotEmpty &&
+            (value.endsWith('/') ||
+                value.endsWith('+') ||
+                value.endsWith('x')) &&
+            btnTxt == '.') ||
+        (value.isNotEmpty &&
+            value.endsWith('0') &&
+            isOperator(value[value.length - 2]) &&
+            !isOperator(btnTxt) &&
+            btnTxt == '.') ||
+        (value.isNotEmpty &&
+            isOperator(value[value.length - 1]) &&
+            btnTxt == "00")) return;
+
+    if (value.isEmpty || value.isEmpty && btnTxt == '-') {
+      if (btnTxt == '-') isOp = 0;
+        value = btnTxt;
+    } else if (value.isNotEmpty &&
+      (isNumeric(btnTxt) || isOperator(btnTxt) || value[value.length - 1] == '.')) {
+      if ((isNumeric(value[value.length - 1]) && isNumeric(btnTxt)) ||
+          (isNumeric(value[value.length - 1]) && isOperator(btnTxt)) ||
+          (isOperator(value[value.length - 1]) && isNumeric(btnTxt))) {
+        if (btnTxt == '.') {
+          if (isOp == 1) return ;
+          isOp += 1;
+        }
+        if (isOperator(btnTxt)) {
+          isOp = 0;
+        }
+        value += btnTxt;
+      } else if (value.endsWith('+') && btnTxt == '-') {
+        isOp = 1;
+        value += btnTxt;
+      }
+    } 
+  }
+
+  void handleInput(String btnTxt) {
     if (btnTxt != '=' && btnTxt != 'AC' && btnTxt != 'C') {
       if (isNumeric(btnTxt) || isOperator(btnTxt)) {
-        if (finalResult.isEmpty && result.isNotEmpty && value.isEmpty && isOperator(btnTxt) && btnTxt != '.') {
-          value += result;
-          result = '';
-        }
-        if ((value.isEmpty && (btnTxt == '+' || btnTxt == 'x' || btnTxt == '/' || btnTxt == '.' || btnTxt == "00" || btnTxt == '0')) || 
-          (value.isNotEmpty && value[value.length - 1] == '.' && isOperator(btnTxt)) || 
-            (value.isNotEmpty && value[value.length - 1] == '-' && (btnTxt == 'x' || btnTxt == '/' || btnTxt == '-' || btnTxt == '.')) ||
-              (value.isNotEmpty && (value[value.length - 1] == '/' || value[value.length - 1] == '+' || value[value.length - 1] == 'x') && btnTxt == '.') ||
-                (value.isNotEmpty && value[value.length - 1] == '0' && isOperator(value[value.length - 2]) && !isOperator(btnTxt) && btnTxt == '.') ||
-                  (value.isNotEmpty && isOperator(value[value.length - 1]) && btnTxt == "00")) return ;
-        if (value.isEmpty || value.isEmpty && btnTxt == '-') {
-          value = btnTxt;
-        } else if (value.isNotEmpty && (isNumeric(btnTxt) || isOperator(btnTxt))) {
-          if ((isNumeric(value[value.length - 1]) && isNumeric(btnTxt)) || 
-            (isNumeric(value[value.length - 1]) && isOperator(btnTxt)) || 
-              (isOperator(value[value.length - 1]) && isNumeric(btnTxt))) {
-                value += btnTxt;
-          }
-          else if (value[value.length - 1] == '+' && btnTxt == '-') {
-            value += btnTxt;
-          }
-        }
+        handleOperator(btnTxt);
       } else {
-        throw ExceptionInput("There is an issue in your input");
+        throw Exception("There is an issue in your input");
       }
     } else if (btnTxt == 'AC') {
       value = '';
@@ -204,28 +240,48 @@ class _MyHomePageState extends State<MyHomePage> {
       if (value.isNotEmpty) {
         value = value.substring(0, value.length - 1);
       }
-    } else if (btnTxt == '=' && value.length > 1 && !isOperator(value[value.length - 1]) && (value.indexOf("+") > 0 || value.indexOf("/") > 0 || value.indexOf("x") > 0 || value.indexOf("-") > 0)) {
-      finalResult = value;
-      finalResult = value.replaceAll('x', '*');
+    } else if (btnTxt == '=' &&
+        value.length > 1 &&
+        !isOperator(value[value.length - 1]) &&
+        (value.contains("+") ||
+            value.contains("/") ||
+            value.contains("x") ||
+            value.contains("-"))) {
+      calculateResult();
+    }
+  }
 
-      Parser  p = Parser();
-      Expression exp = p.parse(finalResult);
-      ContextModel  cm = ContextModel();
-      double  eval = exp.evaluate(EvaluationType.REAL, cm);
-      value = '';
-      finalResult = '';
-      if (eval is int) {
-        result = eval.toString();
-      } else {
-        String  roundedValue = eval.toStringAsFixed(1);
-        result = roundedValue.toString();
-      }
+  void calculateResult() {
+    finalResult = value;
+    finalResult = value.replaceAll('x', '*');
+
+    Parser  p = Parser();
+    Expression exp = p.parse(finalResult);
+    ContextModel  cm = ContextModel();
+    double  eval = exp.evaluate(EvaluationType.REAL, cm);
+
+    value = '';
+    finalResult = '';
+    isOp = 0;
+
+    if (eval is int) {
+      result = eval.toString();
+    } else {
+      String  roundedValue = eval.toStringAsFixed(2);
+      result = roundedValue.toString();
+    }
+  }
+
+  void calculate(String btnTxt) {
+    try {
+      handleInput(btnTxt);
+    } catch (e) {
+      print(e.toString());
     }
   }
 }
 
 class ExceptionInput implements Exception {
   final String  message;
-
   ExceptionInput(this.message);
 }
