@@ -46,7 +46,8 @@ class _MyHomePageState extends State<MyHomePage> {
   final myController = TextEditingController();
 
   int selectedIndex = 0;
-  String cityName = "";
+  String? selectedCity;
+  List<String> cityName = [];
 
   @override
   void  dispose() {
@@ -72,12 +73,12 @@ class _MyHomePageState extends State<MyHomePage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                CityWidget(city: cityName),
+                CityWidget(city: selectedCity),
               ],
             ),
           ),
-          TodayWeatherScreenView(cityName: cityName),
-          WeeklyWeatherScreenView(cityName: cityName),
+          TodayWeatherScreenView(cityName: selectedCity),
+          WeeklyWeatherScreenView(cityName: selectedCity),
         ],
       ),
       bottomNavigationBar: bottomNavigation(),
@@ -124,17 +125,16 @@ class _MyHomePageState extends State<MyHomePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              SizedBox(
-                child: Padding(
-                  padding: const EdgeInsets.all(5),
-                  child: TextField(
+              Stack(
+                children: [
+                  TextField(
                     controller: myController,
-                    showCursor: false,
                     decoration: const InputDecoration(
-                      prefixIcon: Icon(Icons.search),
-                      labelText: 'Search location...',
-                      labelStyle: TextStyle(
-                        color: mainColor,
+                    hintText: 'Select a city',
+                    prefixIcon: Icon(Icons.search),
+                    labelText: 'Search location...',
+                    labelStyle: TextStyle(
+                    color: Colors.white,
                         fontSize: 14,
                       ),
                       constraints: BoxConstraints(
@@ -143,14 +143,51 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                     ),
                   ),
-                ),
+                  Positioned(
+                    right: 0,
+                    top: 10,
+                    child: DropdownButton<String>(
+                      alignment: Alignment.center,
+                      icon: const Icon(Icons.arrow_drop_down),
+                      iconSize: 24,
+                      autofocus: false,
+                      focusColor: Colors.transparent,
+                      elevation: 12,
+                      underline: Container(
+                        height: 0,
+                        color: Colors.transparent,
+                      ),
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          setState(() {
+                            selectedCity = newValue;
+                            myController.text = newValue;
+                          });
+                        }
+                      },
+                      items: cityName.map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          enabled: false,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ],
               ),
               RotatedBox(
                 quarterTurns: 1,
                 child: GestureDetector(
                   onTap: () {
                     setState(() {
-                      cityName = myController.text;
+                      selectedCity = myController.text;
+                      if (!cityName.contains(selectedCity)) {
+                        if (selectedCity != null) {
+                          if (cityName.isNotEmpty) cityName.clear();
+                          cityName.add(selectedCity!);
+                          myController.text = '';
+                        }
+                      }
                     });
                   },
                   child: Container(
