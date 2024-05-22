@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
-import 'package:weather_app_v2_proj/api/weather_api.dart';
-import 'package:weather_app_v2_proj/widget/city_widget.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:weather_app_v2_proj/utils/geolocation.dart';
 
+import 'package:weather_app_v2_proj/widget/city_widget.dart';
+import 'package:weather_app_v2_proj/api/weather_api.dart';
+import 'package:weather_app_v2_proj/widget/pop_up_validation.dart';
 import 'Screen/today_weather_screen.dart';
 import 'Screen/weekly_weather_screen.dart';
 
@@ -129,19 +132,24 @@ class _MyHomePageState extends State<MyHomePage> {
             children: <Widget>[
               Stack(
                 children: [
-                  TextField(
-                    controller: myController,
-                    decoration: const InputDecoration(
-                    hintText: 'Select a city',
-                    prefixIcon: Icon(Icons.search),
-                    labelText: 'Search location...',
-                    labelStyle: TextStyle(
-                    color: Colors.white,
-                        fontSize: 14,
-                      ),
-                      constraints: BoxConstraints(
-                        maxHeight: 50,
-                        maxWidth: 200,
+                  const Positioned(
+                    left:0,
+                    child: AboutDialog()),
+                  Positioned(
+                    child: TextField(
+                      controller: myController,
+                      decoration: const InputDecoration(
+                      hintText: 'Select a city',
+                      prefixIcon: Icon(Icons.search),
+                      labelText: 'Search location...',
+                      labelStyle: TextStyle(
+                      color: Colors.white,
+                          fontSize: 14,
+                        ),
+                        constraints: BoxConstraints(
+                          maxHeight: 50,
+                          maxWidth: 200,
+                        ),
                       ),
                     ),
                   ),
