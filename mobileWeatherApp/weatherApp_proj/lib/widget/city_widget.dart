@@ -5,8 +5,8 @@ class CityWidget extends StatelessWidget {
 
   const CityWidget ({
     this.city,
-    Key? key
-  }) : super(key: key);
+    super.key
+  });
 
   @override
   Widget build(BuildContext context) {

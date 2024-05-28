@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:weather_app_proj/widget/city_widget.dart';
@@ -44,6 +45,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final Logger logger = Logger();
   final myController = TextEditingController();
+  final PageController  _pageController = PageController();
 
   int selectedIndex = 0;
   String? selectedCity;
@@ -59,8 +61,13 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: appBarTop(),
-      body: IndexedStack(
-        index: selectedIndex,
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: (index) {
+          setState(() {
+            selectedIndex = index;
+          });
+        },
         children: <Widget>[
           Center(
             child: Column(
@@ -88,6 +95,17 @@ class _MyHomePageState extends State<MyHomePage> {
   // Bottom Navigation
   BottomNavigationBar bottomNavigation() {
     return BottomNavigationBar(
+      currentIndex: selectedIndex,
+      onTap: (index) {
+        _pageController.animateToPage(
+          index,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.ease,
+        );
+        setState(() {
+          selectedIndex = index;
+        });
+      },
       backgroundColor: Colors.blueGrey,
       selectedItemColor: Colors.amber,
       items: const <BottomNavigationBarItem>[
@@ -104,12 +122,6 @@ class _MyHomePageState extends State<MyHomePage> {
           label: 'Weekly'
         ),
       ],
-      currentIndex: selectedIndex,
-      onTap: (int index) {
-        setState(() {
-          selectedIndex = index;
-        });
-      },
       unselectedItemColor: mainColor,
     );
   }
