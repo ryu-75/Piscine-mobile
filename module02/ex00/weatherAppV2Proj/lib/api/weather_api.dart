@@ -1,10 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:weather_app_v2_proj/api/api_service.dart';
 import 'package:weather_app_v2_proj/model/weather_model.dart';
 import 'package:weather_app_v2_proj/utils/geolocation.dart';
+import 'package:weather_app_v2_proj/widget/pop_up_validation.dart';
 
 class WeatherApi extends StatefulWidget {
   const WeatherApi({super.key});
@@ -14,15 +16,15 @@ class WeatherApi extends StatefulWidget {
 }
 
 class _WeatherApiState extends State<WeatherApi> {
-  String  data = '';
+  Map<String, dynamic>?  dataArray;
   final ApiService  _service = ApiService();
-
-  Future<String>  fetchWeatherData() async {
+  String data = '';
+  Future<Map<String, dynamic>>  fetchWeatherData() async {
     final response = await _service.fetchWeatherData();
     if (response.statusCode == 200) {
       data = response.body;
-      print(data);
-      return data;
+      dataArray = jsonDecode(data);
+      return dataArray!;
     } else {
       throw Exception("Data can't be retrieve");
     }
@@ -30,36 +32,38 @@ class _WeatherApiState extends State<WeatherApi> {
 
   @override
   Widget  build(BuildContext context) {
-    // List<WeatherModel>  weatherData = [];
-
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        ElevatedButton(
-          onPressed: fetchWeatherData,
-          child: const Text('Fetch data'),
+        const SizedBox(height: 20),
+        FutureBuilder(
+          future: determinePosition(),
+          builder: (BuildContext context, AsyncSnapshot<Position> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator()
+              );
+            } else if (snapshot.hasError) {
+              return Center(
+                child: Text('Error: ${snapshot.error}')
+              );
+            } else if (snapshot.hasData) {
+              String  cardinalValues = "Latitude: ${snapshot.data!.latitude} Longitude: ${snapshot.data!.longitude}";
+              return Center(
+                child: Text(cardinalValues),
+              );
+            } else {
+              return const Center(
+                child: Text('No data available')
+              );
+            }
+          },
         ),
-        // const SizedBox(height: 20),
-        Text(data),
-        // SizedBox(
-        //   height: 100,
-        //   width: 100,
-        //   child: ListView.builder(
-        //     itemCount: weatherData.length,
-        //     itemBuilder: (context, index) {
-        //       final weathers = weatherData[index];
-        //       // final latitude = weathers.latitude;
-        //       final longitude = weathers.longitude;
-        //       // final current = weathers.current;
-        //       // final temperatureUnit = weathers.temperatureUnit;
-        //       // final forecastDays = weathers.forecastDays;
-        //       return ListTile(
-        //         title: Text(longitude.toString()),
-        //       );
-        //     },
-        //   ),
-        // ),
       ],
     );
   }
 }
+
+// class _GetCurrentPosition extends Position {
+
+// }
