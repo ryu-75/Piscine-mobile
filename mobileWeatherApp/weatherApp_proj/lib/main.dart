@@ -142,57 +142,7 @@ class _MyHomePageState extends State<MyHomePage> {
         children: <Widget>[
           Stack(
             children: [
-              ElevatedButton.icon(
-                label: KeyboardListener(
-                  focusNode: _focusNode,
-                  onKeyEvent: (e) {
-                    if (e is KeyDownEvent && e.logicalKey == LogicalKeyboardKey.enter) {
-                      setState(() {
-                        String? newValue = myController.text;
-                        if (newValue.isNotEmpty) {
-                          selectedCity = newValue;
-                          cityName.add(selectedCity!);
-                          myController.text = '';
-                        }
-                      });
-                    }
-                  },
-                  child: TextField(
-                    textInputAction: TextInputAction.search,
-                    controller: myController,
-                    decoration: const InputDecoration(
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.transparent), 
-                      ),
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.transparent)
-                      ),
-                      hintText: 'Select a city',
-                      labelStyle: TextStyle(
-                      color: Colors.white,
-                        fontSize: 14,
-                      ),
-                      constraints: BoxConstraints(
-                        maxHeight: 50,
-                        maxWidth: 200,
-                      ),
-                    ),
-                  ),
-                ),
-                icon: const Icon(Icons.search),
-                autofocus: false,
-                iconAlignment: IconAlignment.start,
-                onPressed: () {
-                  setState(() {
-                    String? newValue = myController.text;
-                    if (newValue.isNotEmpty) {
-                      selectedCity = newValue;
-                      cityName.add(selectedCity!);
-                      myController.text = '';
-                    }
-                  });
-                },                   
-              ),
+              searchButton(),
               Positioned(
                 right: 0,
                 child: PopupMenuButton<String>(
@@ -205,7 +155,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     });
                   },
                   itemBuilder: (BuildContext context) {
-                    return cityName.map<PopupMenuItem<String>>((String value) {
+                    return cityName.take(1).map<PopupMenuItem<String>>((String value) {
                         return PopupMenuItem<String>(
                           value: value,
                           child: Text(value),
@@ -240,6 +190,70 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // Search button
+  ElevatedButton searchButton() {
+    MediaQueryData  queryData = MediaQuery.of(context);
+    
+    double screenWidth = queryData.size.width;
+    return ElevatedButton.icon(
+      label: KeyboardListener(
+        focusNode: _focusNode,
+        onKeyEvent: (e) {
+          if (e is KeyDownEvent && e.logicalKey == LogicalKeyboardKey.enter) {
+            setState(() {
+              String? newValue = myController.text;
+              if (newValue.isNotEmpty) {
+                selectedCity = newValue;
+                if (cityName.isNotEmpty) cityName.clear();
+                cityName.add(selectedCity!);
+                myController.text = '';
+              }
+            });
+          }
+        },
+        child: SizedBox(
+          width: screenWidth * 0.4,
+          child: textField(screenWidth),
+        ),
+      ),
+      icon: const Icon(Icons.search),
+      autofocus: false,
+      iconAlignment: IconAlignment.start,
+      onPressed: () {
+        setState(() {
+          String? newValue = myController.text;
+          if (newValue.isNotEmpty) {
+            selectedCity = newValue;
+            cityName.add(selectedCity!);
+            myController.text = '';
+            myController.clear();
+          }
+        });
+      },                   
+    );
+  }
+
+  // Text field
+  TextField textField(double screenWidth) {
+    return TextField(
+      textInputAction: TextInputAction.search,
+      controller: myController,
+      decoration: const InputDecoration(
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.transparent), 
+        ),
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.transparent)
+        ),
+        hintText: 'Select a city',
+        labelStyle: TextStyle(
+        color: Colors.white,
+          fontSize: 14,
+        ),
       ),
     );
   }
