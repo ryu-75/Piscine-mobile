@@ -1,5 +1,9 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:logger/logger.dart';
 import 'package:weather_app_proj/widget/city_widget.dart';
 
@@ -46,6 +50,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final Logger logger = Logger();
   final myController = TextEditingController();
   final PageController  _pageController = PageController();
+  final FocusNode _focusNode = FocusNode();
 
   int selectedIndex = 0;
   String? selectedCity;
@@ -132,21 +137,39 @@ class _MyHomePageState extends State<MyHomePage> {
       backgroundColor: Colors.blueGrey,
       shadowColor: Colors.blueGrey,
       elevation: 4,
-      title: Column(
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Stack(
-                children: [
-                  TextField(
+          Stack(
+            children: [
+              ElevatedButton.icon(
+                label: KeyboardListener(
+                  focusNode: _focusNode,
+                  onKeyEvent: (e) {
+                    if (e is KeyDownEvent && e.logicalKey == LogicalKeyboardKey.enter) {
+                      setState(() {
+                        String? newValue = myController.text;
+                        if (newValue.isNotEmpty) {
+                          selectedCity = newValue;
+                          cityName.add(selectedCity!);
+                          myController.text = '';
+                        }
+                      });
+                    }
+                  },
+                  child: TextField(
+                    textInputAction: TextInputAction.search,
                     controller: myController,
                     decoration: const InputDecoration(
-                    hintText: 'Select a city',
-                    prefixIcon: Icon(Icons.search),
-                    labelText: 'Search location...',
-                    labelStyle: TextStyle(
-                    color: Colors.white,
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.transparent), 
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.transparent)
+                      ),
+                      hintText: 'Select a city',
+                      labelStyle: TextStyle(
+                      color: Colors.white,
                         fontSize: 14,
                       ),
                       constraints: BoxConstraints(
@@ -155,68 +178,66 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                     ),
                   ),
-                  Positioned(
-                    right: 0,
-                    top: 10,
-                    child: DropdownButton<String>(
-                      alignment: Alignment.center,
-                      icon: const Icon(Icons.arrow_drop_down),
-                      iconSize: 24,
-                      autofocus: false,
-                      focusColor: Colors.transparent,
-                      elevation: 12,
-                      underline: Container(
-                        height: 0,
-                        color: Colors.transparent,
-                      ),
-                      onChanged: (String? newValue) {
-                        if (newValue != null) {
-                          setState(() {
-                            selectedCity = newValue;
-                            myController.text = newValue;
-                          });
-                        }
-                      },
-                      items: cityName.map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          enabled: false,
-                          child: Text(value),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ],
+                ),
+                icon: const Icon(Icons.search),
+                autofocus: false,
+                iconAlignment: IconAlignment.start,
+                onPressed: () {
+                  setState(() {
+                    String? newValue = myController.text;
+                    if (newValue.isNotEmpty) {
+                      selectedCity = newValue;
+                      cityName.add(selectedCity!);
+                      myController.text = '';
+                    }
+                  });
+                },                   
               ),
-              RotatedBox(
-                quarterTurns: 1,
-                child: GestureDetector(
-                  onTap: () {
+              Positioned(
+                right: 0,
+                child: PopupMenuButton<String>(
+                  position: PopupMenuPosition.under,
+                  padding: const EdgeInsets.only(top: 10),
+                  icon: const Icon(Icons.arrow_drop_down),
+                  onSelected: (String? value) {
                     setState(() {
-                      selectedCity = myController.text;
-                      if (!cityName.contains(selectedCity)) {
-                        if (selectedCity != null) {
-                          if (cityName.isNotEmpty) cityName.clear();
-                          cityName.add(selectedCity!);
-                          myController.text = '';
-                        }
-                      }
+                      selectedCity = value;
                     });
                   },
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.grey.withOpacity(0.5),
-                    ),
-                    child: const Icon(
-                      Icons.navigation_outlined,
-                      size: 30,
-                      color: mainColor,
-                    ),
-                  ),
+                  itemBuilder: (BuildContext context) {
+                    return cityName.map<PopupMenuItem<String>>((String value) {
+                        return PopupMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      },
+                    ).toList();
+                  },
                 ),
               ),
             ],
+          ),
+          RotatedBox(
+            quarterTurns: 1,
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  selectedCity = "Geological";
+                });
+              },
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.grey.withOpacity(0.5),
+                ),
+                child: const Icon(
+                  Icons.navigation_outlined,
+                  size: 30,
+                  color: mainColor,
+                ),
+              ),
+            ),
           ),
         ],
       ),
