@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:weather_app_v2_proj/api/weather_api.dart';
 import 'package:weather_app_v2_proj/widget/city_widget.dart';
 
 class WeeklyWeatherScreenView extends StatelessWidget {
   final String? cityName;
+  final bool?   currentPosition;
 
-  const WeeklyWeatherScreenView ({this.cityName, super.key});
+  const WeeklyWeatherScreenView ({this.cityName, this.currentPosition, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +22,9 @@ class WeeklyWeatherScreenView extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            CityWidget(city: cityName),
+            const SizedBox(height: 50),
+            if (currentPosition == true) GetCardinal().getCardinal(),
+            // CityWidget(city: cityName),
           ],
         ),
       ),

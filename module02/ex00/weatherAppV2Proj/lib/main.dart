@@ -4,8 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:logger/logger.dart';
+import 'package:weather_app_v2_proj/Screen/currently_weather_screen.dart';
 import 'package:weather_app_v2_proj/api/weather_api.dart';
+import 'package:weather_app_v2_proj/utils/geolocation.dart';
 import 'package:weather_app_v2_proj/widget/city_widget.dart';
 import 'package:weather_app_v2_proj/widget/pop_up_validation.dart';
 
@@ -21,7 +24,6 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -57,6 +59,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int selectedIndex = 0;
   String? selectedCity;
   List<String> cityName = [];
+  bool  currentPosition = false;
 
   @override
   void  dispose() {
@@ -76,24 +79,9 @@ class _MyHomePageState extends State<MyHomePage> {
           });
         },
         children: <Widget>[
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                const Text(
-                  "Currently",
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                CityWidget(city: selectedCity),
-                const WeatherApi(),
-              ],
-            ),
-          ),
-          TodayWeatherScreenView(cityName: selectedCity),
-          WeeklyWeatherScreenView(cityName: selectedCity),
+          CurrentlyWeatherScreenView(cityName: selectedCity, currentPosition: currentPosition),
+          TodayWeatherScreenView(cityName: selectedCity, currentPosition: currentPosition),
+          WeeklyWeatherScreenView(cityName: selectedCity, currentPosition: currentPosition),
         ],
       ),
       bottomNavigationBar: bottomNavigation(),
@@ -183,7 +171,7 @@ class _MyHomePageState extends State<MyHomePage> {
             child: GestureDetector(
               onTap: () {
                 setState(() {
-                  selectedCity = "Geological";
+                  currentPosition = true;
                 });
               },
               child: Container(

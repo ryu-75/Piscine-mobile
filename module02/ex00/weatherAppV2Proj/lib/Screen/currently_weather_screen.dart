@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:weather_app_v2_proj/api/weather_api.dart';
 import 'package:weather_app_v2_proj/widget/city_widget.dart';
 
-class TodayWeatherScreenView extends StatelessWidget {
+class CurrentlyWeatherScreenView extends StatelessWidget {
   final String? cityName;
-  final bool?    currentPosition;
+  final bool?   currentPosition;
 
-  const TodayWeatherScreenView({this.cityName, this.currentPosition, super.key});
+  const CurrentlyWeatherScreenView ({this.cityName, this.currentPosition, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +16,7 @@ class TodayWeatherScreenView extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             const Text(
-              "Today",
+              "Currently",
               style: TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
