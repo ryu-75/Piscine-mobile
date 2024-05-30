@@ -1,4 +1,9 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:logger/logger.dart';
 import 'package:weather_app_proj/widget/city_widget.dart';
 import 'package:dropdown_textfield/dropdown_textfield.dart';
@@ -47,11 +52,20 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final Logger logger = Logger();
   final myController = TextEditingController();
+<<<<<<< HEAD
   final List<String> _recentSearches = [];
 
   int selectedIndex = 0;
   String cityName = "";
   String _lastSearch = '';
+=======
+  final PageController  _pageController = PageController();
+  final FocusNode _focusNode = FocusNode();
+
+  int selectedIndex = 0;
+  String? selectedCity;
+  List<String> cityName = [];
+>>>>>>> 1c28c5c283d012b5d8e75ff7c89b6844ff50d417
 
   // FocusNode searchFocusNode = FocusNode();
   // FocusNode textFieldFocusNode = FocusNode();
@@ -66,8 +80,13 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: appBarTop(),
-      body: IndexedStack(
-        index: selectedIndex,
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: (index) {
+          setState(() {
+            selectedIndex = index;
+          });
+        },
         children: <Widget>[
           Center(
             child: Column(
@@ -80,12 +99,12 @@ class _MyHomePageState extends State<MyHomePage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                CityWidget(city: cityName),
+                CityWidget(city: selectedCity),
               ],
             ),
           ),
-          TodayWeatherScreenView(cityName: cityName),
-          WeeklyWeatherScreenView(cityName: cityName),
+          TodayWeatherScreenView(cityName: selectedCity),
+          WeeklyWeatherScreenView(cityName: selectedCity),
         ],
       ),
       bottomNavigationBar: bottomNavigation(),
@@ -95,6 +114,17 @@ class _MyHomePageState extends State<MyHomePage> {
   // Bottom Navigation
   BottomNavigationBar bottomNavigation() {
     return BottomNavigationBar(
+      currentIndex: selectedIndex,
+      onTap: (index) {
+        _pageController.animateToPage(
+          index,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.ease,
+        );
+        setState(() {
+          selectedIndex = index;
+        });
+      },
       backgroundColor: Colors.blueGrey,
       selectedItemColor: Colors.amber,
       items: const <BottomNavigationBarItem>[
@@ -111,12 +141,6 @@ class _MyHomePageState extends State<MyHomePage> {
           label: 'Weekly'
         ),
       ],
-      currentIndex: selectedIndex,
-      onTap: (int index) {
-        setState(() {
-          selectedIndex = index;
-        });
-      },
       unselectedItemColor: mainColor,
     );
   }
@@ -127,8 +151,10 @@ class _MyHomePageState extends State<MyHomePage> {
       backgroundColor: Colors.blueGrey,
       shadowColor: Colors.blueGrey,
       elevation: 4,
-      title: Column(
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
+<<<<<<< HEAD
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
@@ -193,10 +219,122 @@ class _MyHomePageState extends State<MyHomePage> {
                   //   ),
                   // ),
                 ],    
+=======
+          Stack(
+            children: [
+              searchButton(),
+              Positioned(
+                right: 0,
+                child: PopupMenuButton<String>(
+                  position: PopupMenuPosition.under,
+                  padding: const EdgeInsets.only(top: 10),
+                  icon: const Icon(Icons.arrow_drop_down),
+                  onSelected: (String? value) {
+                    setState(() {
+                      selectedCity = value;
+                    });
+                  },
+                  itemBuilder: (BuildContext context) {
+                    return cityName.take(1).map<PopupMenuItem<String>>((String value) {
+                        return PopupMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      },
+                    ).toList();
+                  },
+                ),
+>>>>>>> 1c28c5c283d012b5d8e75ff7c89b6844ff50d417
               ),
             ],
           ),
+          RotatedBox(
+            quarterTurns: 1,
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  selectedCity = "Geological";
+                });
+              },
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.grey.withOpacity(0.5),
+                ),
+                child: const Icon(
+                  Icons.navigation_outlined,
+                  size: 30,
+                  color: mainColor,
+                ),
+              ),
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  // Search button
+  ElevatedButton searchButton() {
+    MediaQueryData  queryData = MediaQuery.of(context);
+    
+    double screenWidth = queryData.size.width;
+    return ElevatedButton.icon(
+      label: KeyboardListener(
+        focusNode: _focusNode,
+        onKeyEvent: (e) {
+          if (e is KeyDownEvent && e.logicalKey == LogicalKeyboardKey.enter) {
+            setState(() {
+              String? newValue = myController.text;
+              if (newValue.isNotEmpty) {
+                selectedCity = newValue;
+                if (cityName.isNotEmpty) cityName.clear();
+                cityName.add(selectedCity!);
+                myController.text = '';
+              }
+            });
+          }
+        },
+        child: SizedBox(
+          width: screenWidth * 0.4,
+          child: textField(screenWidth),
+        ),
+      ),
+      icon: const Icon(Icons.search),
+      autofocus: false,
+      iconAlignment: IconAlignment.start,
+      onPressed: () {
+        setState(() {
+          String? newValue = myController.text;
+          if (newValue.isNotEmpty) {
+            selectedCity = newValue;
+            cityName.add(selectedCity!);
+            myController.text = '';
+            myController.clear();
+          }
+        });
+      },                   
+    );
+  }
+
+  // Text field
+  TextField textField(double screenWidth) {
+    return TextField(
+      textInputAction: TextInputAction.search,
+      controller: myController,
+      decoration: const InputDecoration(
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.transparent), 
+        ),
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.transparent)
+        ),
+        hintText: 'Select a city',
+        labelStyle: TextStyle(
+        color: Colors.white,
+          fontSize: 14,
+        ),
       ),
     );
   }

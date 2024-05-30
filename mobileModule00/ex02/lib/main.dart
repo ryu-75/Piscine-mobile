@@ -63,7 +63,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     Container(
                       alignment: Alignment.centerRight,
                       child: Text(
-                        "",
+                        "0",
                         style: TextStyle(
                           fontSize: 32,
                           color: Colors.black,
@@ -73,7 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     Container(
                       alignment: Alignment.centerRight,  
                       child: Text(
-                        "",
+                        "0",
                         style: TextStyle(
                           fontSize: 32,
                           color: Colors.black,

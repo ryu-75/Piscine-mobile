@@ -181,8 +181,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 btnTxt == 'x' ||
                 btnTxt == '/' ||
                 btnTxt == '.' ||
-                btnTxt == "00" ||
-                btnTxt == '0')) ||
+                btnTxt == "00")) ||
+        (value.isNotEmpty && value == '0' &&
+            btnTxt == '0') ||
         (value.isNotEmpty &&
             value.endsWith('.') &&
             isOperator(btnTxt)) ||
@@ -193,11 +194,6 @@ class _MyHomePageState extends State<MyHomePage> {
             (value.endsWith('/') ||
                 value.endsWith('+') ||
                 value.endsWith('x')) &&
-            btnTxt == '.') ||
-        (value.isNotEmpty &&
-            value.endsWith('0') &&
-            isOperator(value[value.length - 2]) &&
-            !isOperator(btnTxt) &&
             btnTxt == '.') ||
         (value.isNotEmpty &&
             isOperator(value[value.length - 1]) &&
