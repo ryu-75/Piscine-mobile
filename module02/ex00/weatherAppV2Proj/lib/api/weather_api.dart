@@ -13,12 +13,25 @@ class GetCardinal {
           );
         } else if (snapshot.hasError) {
           return Center(
-            child: Text('Error: ${snapshot.error}')
+            child: Text(
+              'Error: ${snapshot.error}',
+              textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 28,
+                  color: Colors.red,
+                ),
+            ),
           );
         } else if (snapshot.hasData) {
-          String  cardinalValues = "Latitude: ${snapshot.data!.latitude} Longitude: ${snapshot.data!.longitude}";
+          String cardinalValues = "${snapshot.data!.latitude}, ${snapshot.data!.longitude}";
           return Center (
-              child: Text(cardinalValues),
+              child: Text(
+                cardinalValues,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 32,
+                ),
+              ),
           );
         } else {
           return const Center(

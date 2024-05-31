@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:weather_app_v2_proj/api/weather_api.dart';
+import 'package:weather_app_v2_proj/utils/utils.dart';
 import 'package:weather_app_v2_proj/widget/city_widget.dart';
 
 class TodayWeatherScreenView extends StatelessWidget {
@@ -23,8 +24,7 @@ class TodayWeatherScreenView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 50),
-            if (currentPosition == true) GetCardinal().getCardinal(),
-            // CityWidget(city: cityName),
+            UtilsMethod().selectedPosition(cityName, currentPosition),
           ],
         ),
       ),

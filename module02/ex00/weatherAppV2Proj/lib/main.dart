@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -5,8 +7,10 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart';
 import 'package:logger/logger.dart';
 import 'package:weather_app_v2_proj/Screen/currently_weather_screen.dart';
+import 'package:weather_app_v2_proj/api/api_service.dart';
 import 'package:weather_app_v2_proj/api/weather_api.dart';
 import 'package:weather_app_v2_proj/utils/geolocation.dart';
 import 'package:weather_app_v2_proj/widget/city_widget.dart';
@@ -68,7 +72,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) {    
     return Scaffold(
       appBar: appBarTop(),
       body: PageView(
@@ -133,11 +137,6 @@ class _MyHomePageState extends State<MyHomePage> {
         children: <Widget>[
           Stack(
             children: [
-              const Positioned(
-                  left: -10,
-                  top: 5,
-                  child: PopUpValidation(),
-                ),
               Padding(
                 padding: const EdgeInsets.only(left:30),
                 child: searchButton(),
@@ -150,6 +149,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   icon: const Icon(Icons.arrow_drop_down),
                   onSelected: (String? value) {
                     setState(() {
+                      currentPosition = false;
                       selectedCity = value;
                     });
                   },
@@ -171,6 +171,7 @@ class _MyHomePageState extends State<MyHomePage> {
             child: GestureDetector(
               onTap: () {
                 setState(() {
+                  selectedCity = '';
                   currentPosition = true;
                 });
               },
