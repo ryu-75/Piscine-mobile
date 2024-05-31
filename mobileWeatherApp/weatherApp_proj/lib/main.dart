@@ -6,10 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logger/logger.dart';
 import 'package:weather_app_proj/widget/city_widget.dart';
-import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'Screen/today_weather_screen.dart';
 import 'Screen/weekly_weather_screen.dart';
-import 'package:dropdown_search/dropdown_search.dart';
 
 // Variable colors
 // Variable colors
@@ -52,20 +50,12 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final Logger logger = Logger();
   final myController = TextEditingController();
-<<<<<<< HEAD
-  final List<String> _recentSearches = [];
-
-  int selectedIndex = 0;
-  String cityName = "";
-  String _lastSearch = '';
-=======
   final PageController  _pageController = PageController();
   final FocusNode _focusNode = FocusNode();
 
   int selectedIndex = 0;
   String? selectedCity;
   List<String> cityName = [];
->>>>>>> 1c28c5c283d012b5d8e75ff7c89b6844ff50d417
 
   // FocusNode searchFocusNode = FocusNode();
   // FocusNode textFieldFocusNode = FocusNode();
@@ -154,72 +144,6 @@ class _MyHomePageState extends State<MyHomePage> {
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-<<<<<<< HEAD
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Flex(
-                direction: Axis.horizontal,
-                children: [
-                  TextField(
-                    controller: myController,
-                    decoration: const InputDecoration(
-                      labelText: 'Enter text',
-                    ),
-                  ),
-                  // DropdownButton<String>(
-                  //   hint: Text('Last Search: $_lastSearch'),
-                  //   items: _recentSearches.map((String value) {
-                  //     return DropdownMenuItem<String>(
-                  //       value: value,
-                  //       child: Text(value),
-                  //     );
-                  //   }).toList(),
-                  //   onChanged: (String? newValue) {
-                  //     if (newValue != null) {
-                  //       setState(() {
-                  //         _lastSearch = newValue;
-                  //         myController.text = newValue;
-                  //       });
-                  //     }
-                  //   },
-                  // ),
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        String searchText = myController.text;
-                        _lastSearch = searchText;
-                        if (!_recentSearches.contains(searchText)) {
-                          _recentSearches.insert(0, searchText);
-                        }
-                      });
-                    },
-                    child: const Text('Search'),
-                  ),
-                  // RotatedBox(
-                  //   quarterTurns: 1,
-                  //   child: GestureDetector(
-                  //     onTap: () {
-                  //       setState(() {
-                  //         cityName = myController.text;
-                  //       });
-                  //     },
-                  //     child: Container(
-                  //       padding: const EdgeInsets.all(8),
-                  //       decoration: BoxDecoration(
-                  //         shape: BoxShape.circle,
-                  //         color: Colors.grey.withOpacity(0.5),
-                  //       ),
-                  //       child: const Icon(
-                  //         Icons.navigation_outlined,
-                  //         size: 30,
-                  //         color: mainColor,
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
-                ],    
-=======
           Stack(
             children: [
               searchButton(),
@@ -244,7 +168,6 @@ class _MyHomePageState extends State<MyHomePage> {
                     ).toList();
                   },
                 ),
->>>>>>> 1c28c5c283d012b5d8e75ff7c89b6844ff50d417
               ),
             ],
           ),
