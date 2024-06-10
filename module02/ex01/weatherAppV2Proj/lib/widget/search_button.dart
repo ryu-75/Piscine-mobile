@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:weather_app_v2_proj/widget/city_list.dart';
 
 class SearchButton extends StatefulWidget {
   final ValueNotifier<String?>  selectedCity;
@@ -63,103 +64,114 @@ class _SearchButtonState extends State<SearchButton> {
   Widget build(BuildContext context) {
     MediaQueryData queryData = MediaQuery.of(context);
     double screenWidth = queryData.size.width;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: <Widget>[
-        Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 30),
-              child: ElevatedButton.icon(
-                label: KeyboardListener(
-                  focusNode: focusNode,
-                  onKeyEvent: (e) {
-                    if (e is KeyDownEvent && e.logicalKey == LogicalKeyboardKey.enter) {
-                      setState(() {
-                        String newValue = controller.text;
-                        if (newValue.isNotEmpty) {
-                          widget.selectedCity.value = newValue;
-                          widget.cityName.value.clear();
-                          widget.cityName.value.add(widget.selectedCity.value!);
-                          controller.text = '';
-                        }
-                      });
-                    }
-                  },
-                  child: SizedBox(
-                    width: screenWidth * 0.4,
-                    child: textField(screenWidth),
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            searchButton(screenWidth),
+            RotatedBox(
+              quarterTurns: 1,
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    widget.selectedCity.value = '';
+                    widget.currentPosition.value = true;
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.grey.withOpacity(0.5),
+                  ),
+                  child: const Icon(
+                    Icons.navigation_outlined,
+                    size: 30,
+                    color: Color.fromARGB(220, 238, 238, 238),
                   ),
                 ),
-                icon: const Icon(Icons.search),
-                autofocus: false,
-                onPressed: () {
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Stack searchButton(double screenWidth) {
+    return Stack(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 30),
+          child: ElevatedButton.icon(
+            label: KeyboardListener(
+              focusNode: focusNode,
+              onKeyEvent: (e) {
+                if (e is KeyDownEvent && e.logicalKey == LogicalKeyboardKey.enter) {
                   setState(() {
                     String newValue = controller.text;
                     if (newValue.isNotEmpty) {
                       widget.selectedCity.value = newValue;
+                      widget.cityName.value.clear();
                       widget.cityName.value.add(widget.selectedCity.value!);
                       controller.text = '';
-                      controller.clear();
                     }
                   });
-                },
-              ),
-            ),  
-          ],
-        ),
-        Visibility(
-          visible: widget.showPopup && filteredSuggestions.isNotEmpty && controller.text.isNotEmpty,
-          child: Positioned(
-            left: 0,
-            top:0,
-            child: SizedBox(
-              width: 200,
-              height: 50,
-              child: Card(
-                child: ListView.builder(
-                  itemCount: filteredSuggestions.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    String suggestion = filteredSuggestions[index];
-                    return ListTile(
-                      title: Text(suggestion),
-                      onTap: () {
-                        setState(() {
-                          widget.currentPosition.value = false;
-                          widget.selectedCity.value = suggestion;
-                        });
-                      },
-                    );
-                  },
-                ),
+                }
+              },
+              child: SizedBox(
+                width: screenWidth * 0.4,
+                child: textField(screenWidth),
               ),
             ),
-          ),  
-        ),
-        RotatedBox(
-          quarterTurns: 1,
-          child: GestureDetector(
-            onTap: () {
+            icon: const Icon(Icons.search),
+            autofocus: false,
+            onPressed: () {
               setState(() {
-                widget.selectedCity.value = '';
-                widget.currentPosition.value = true;
+                String newValue = controller.text;
+                if (newValue.isNotEmpty) {
+                  widget.selectedCity.value = newValue;
+                  widget.cityName.value.add(widget.selectedCity.value!);
+                  controller.text = '';
+                  controller.clear();
+                }
               });
             },
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.grey.withOpacity(0.5),
-              ),
-              child: const Icon(
-                Icons.navigation_outlined,
-                size: 30,
-                color: Color.fromARGB(220, 238, 238, 238),
+          ),
+        ),  
+      ],
+    );
+  }
+
+  Visibility cityList() {
+    return Visibility(
+        visible: widget.showPopup && filteredSuggestions.isNotEmpty && controller.text.isNotEmpty,
+      child: Column(
+        children: [
+          SizedBox(
+            width: 200,
+            height: 50,
+            child: Card(
+              child: ListView.builder(
+                itemCount: filteredSuggestions.length,
+                itemBuilder: (BuildContext context, int index) {
+                  String suggestion = filteredSuggestions[index];
+                  return ListTile(
+                    title: Text(suggestion),
+                    onTap: () {
+                      setState(() {
+                        widget.currentPosition.value = false;
+                        widget.selectedCity.value = suggestion;
+                      });
+                    },
+                  );
+                },
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -191,6 +203,3 @@ class _SearchButtonState extends State<SearchButton> {
     );
   }
 }
-
-
-// I should finish to display the pop up containing all values already setted

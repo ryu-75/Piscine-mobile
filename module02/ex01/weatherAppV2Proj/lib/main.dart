@@ -13,6 +13,7 @@ import 'package:weather_app_v2_proj/Screen/currently_weather_screen.dart';
 import 'package:weather_app_v2_proj/api/api_service.dart';
 import 'package:weather_app_v2_proj/api/weather_api.dart';
 import 'package:weather_app_v2_proj/utils/geolocation.dart';
+import 'package:weather_app_v2_proj/widget/city_list.dart';
 import 'package:weather_app_v2_proj/widget/city_widget.dart';
 import 'package:weather_app_v2_proj/widget/pop_up_validation.dart';
 import 'package:weather_app_v2_proj/widget/search_button.dart';
@@ -75,25 +76,36 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {  
     return Scaffold(
       appBar: appBarTop(),
-      body: PageView(
-        controller: _pageController,
-        onPageChanged: (index) {
-          setState(() {
-            selectedIndex = index;
-          });
-        },
-        children: <Widget>[
-          CurrentlyWeatherScreenView(
-            selectedCity: selectedCityNotifier, 
-            selectedPosition: currentPositionNotifier
+      body: Stack(
+        children: [
+          PageView(
+            controller: _pageController,
+            onPageChanged: (index) {
+              setState(() {
+                selectedIndex = index;
+              });
+            },
+            children: <Widget>[
+              CurrentlyWeatherScreenView(
+                selectedCity: selectedCityNotifier, 
+                selectedPosition: currentPositionNotifier
+              ),
+              TodayWeatherScreenView(
+                selectedCity: selectedCityNotifier, 
+                selectedPosition: currentPositionNotifier
+              ),
+              WeeklyWeatherScreenView(
+                selectedCity: selectedCityNotifier, 
+                selectedPosition: currentPositionNotifier
+              ),
+            ],
           ),
-          TodayWeatherScreenView(
+          CityList(
+            controller: myController, 
             selectedCity: selectedCityNotifier, 
-            selectedPosition: currentPositionNotifier
-          ),
-          WeeklyWeatherScreenView(
-            selectedCity: selectedCityNotifier, 
-            selectedPosition: currentPositionNotifier
+            cityName: cityNameNotifier, 
+            currentPosition: currentPositionNotifier, 
+            showPopup: true
           ),
         ],
       ),
@@ -140,7 +152,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return AppBar(
       backgroundColor: Colors.blueGrey,
       shadowColor: Colors.blueGrey,
-      elevation: 4,
+      elevation: 2,
       title: SearchButton(
         controller: myController, 
         selectedCity: selectedCityNotifier,
