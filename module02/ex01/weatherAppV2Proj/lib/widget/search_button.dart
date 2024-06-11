@@ -1,25 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:weather_app_v2_proj/api/api_service.dart';
 import 'package:weather_app_v2_proj/widget/city_list.dart';
+import 'package:weather_app_v2_proj/widget/pop_up_validation.dart';
+import 'package:weather_app_v2_proj/widget/popup_permission.dart';
 
 class SearchButton extends StatefulWidget {
-  final ValueNotifier<String?>  selectedCity;
+  final ValueNotifier<String?> selectedCity;
   final TextEditingController controller;
   final ValueNotifier<List<String>> cityName;
   final ValueNotifier<bool?> currentPosition;
   final FocusNode? focusNode;
-  final bool  showPopup;
+  final bool showPopup;
 
-  const SearchButton({
-    super.key,
-    required this.controller,
-    required this.selectedCity,
-    required this.cityName,
-    required this.currentPosition,
-    required this.showPopup,
-    this.focusNode
-  });
+  const SearchButton(
+      {super.key,
+      required this.controller,
+      required this.selectedCity,
+      required this.cityName,
+      required this.currentPosition,
+      required this.showPopup,
+      this.focusNode});
 
   @override
   State<SearchButton> createState() => _SearchButtonState();
@@ -28,8 +30,8 @@ class SearchButton extends StatefulWidget {
 class _SearchButtonState extends State<SearchButton> {
   late TextEditingController controller;
   late FocusNode focusNode;
-  List<String>  filteredSuggestions = [];
-  bool  showPopup = false;
+  List<String> filteredSuggestions = [];
+  bool showPopup = false;
   @override
   void initState() {
     super.initState();
@@ -45,18 +47,18 @@ class _SearchButtonState extends State<SearchButton> {
     super.dispose();
   }
 
-  void  _onTextChanged() {
+  void _onTextChanged() {
     setState(() {
       showPopup = controller.text.isNotEmpty;
     });
   }
 
-  void  onSearchTextChanged() {
-    String  searchText = controller.text;
+  void onSearchTextChanged() {
     setState(() {
       filteredSuggestions = widget.cityName.value
-        .where((city) => city.toLowerCase().startsWith(controller.text.toLowerCase()))
-        .toList();
+          .where((city) =>
+              city.toLowerCase().startsWith(controller.text.toLowerCase()))
+          .toList();
     });
   }
 
@@ -74,6 +76,7 @@ class _SearchButtonState extends State<SearchButton> {
               quarterTurns: 1,
               child: GestureDetector(
                 onTap: () {
+                  const PopupPermissions();
                   setState(() {
                     widget.selectedCity.value = '';
                     widget.currentPosition.value = true;
@@ -108,7 +111,8 @@ class _SearchButtonState extends State<SearchButton> {
             label: KeyboardListener(
               focusNode: focusNode,
               onKeyEvent: (e) {
-                if (e is KeyDownEvent && e.logicalKey == LogicalKeyboardKey.enter) {
+                if (e is KeyDownEvent &&
+                    e.logicalKey == LogicalKeyboardKey.enter) {
                   setState(() {
                     String newValue = controller.text;
                     if (newValue.isNotEmpty) {
@@ -139,14 +143,16 @@ class _SearchButtonState extends State<SearchButton> {
               });
             },
           ),
-        ),  
+        ),
       ],
     );
   }
 
   Visibility cityList() {
     return Visibility(
-        visible: widget.showPopup && filteredSuggestions.isNotEmpty && controller.text.isNotEmpty,
+      visible: widget.showPopup &&
+          filteredSuggestions.isNotEmpty &&
+          controller.text.isNotEmpty,
       child: Column(
         children: [
           SizedBox(
@@ -180,11 +186,23 @@ class _SearchButtonState extends State<SearchButton> {
     return TextField(
       textInputAction: TextInputAction.search,
       controller: controller,
-      onChanged: (value) {
+      onChanged: (String value) {
         setState(() {
           filteredSuggestions = widget.cityName.value
-              .where((city) => city.toLowerCase().startsWith(value.toLowerCase()))
+              .where(
+                  (city) => city.toLowerCase().startsWith(value.toLowerCase()))
               .toList();
+        });
+      },
+      onSubmitted: (String? text) {
+        setState(() {
+          String newValue = controller.text;
+          if (newValue.isNotEmpty) {
+            widget.selectedCity.value = newValue;
+            widget.cityName.value.clear();
+            widget.cityName.value.add(widget.selectedCity.value!);
+            controller.text = '';
+          }
         });
       },
       decoration: const InputDecoration(

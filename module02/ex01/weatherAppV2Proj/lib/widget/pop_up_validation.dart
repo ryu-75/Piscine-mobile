@@ -1,178 +1,191 @@
+import 'dart:io';
+
+import 'package:baseflow_plugin_template/baseflow_plugin_template.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
-import 'dart:async';
-import 'dart:io' show Platform;
+import 'package:permission_handler/permission_handler.dart';
 
-// import 'package:baseflow_plugin_template/baseflow_plugin_template.dart';
+///Defines the main theme color
+final MaterialColor themeMaterialColor =
+    BaseflowPluginExample.createMaterialColor(
+        const Color.fromRGBO(48, 49, 60, 1));
 
-class PopUpValidation extends StatefulWidget {
-  static const String _kLocationServicesDisabledMessage ='Location services are disabled.';
-  static const String _kPermissionDeniedMessage = 'Permission denied.';
-  static const String _kPermissionDeniedForeverMessage = 'Permission denied forever.';
-  static const String _kPermissionGrantedMessage = 'Permission granted.';
-
-  const PopUpValidation({super.key});
+/// A Flutter application demonstrating the functionality of this plugin
+class PermissionHandlerWidget extends StatefulWidget {
+  /// Create a page containing the functionality of this plugin
+  static ExamplePage createPage() {
+    return ExamplePage(
+        Icons.location_on, (context) => PermissionHandlerWidget());
+  }
 
   @override
-  State<PopUpValidation> createState() => _PopUpValidationState();
+  _PermissionHandlerWidgetState createState() =>
+      _PermissionHandlerWidgetState();
 }
 
-class _PopUpValidationState extends State<PopUpValidation> {
-  final GeolocatorPlatform _geolocatorPlatform = GeolocatorPlatform.instance;
+class _PermissionHandlerWidgetState extends State<PermissionHandlerWidget> {
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Column(
+        children: [
+          Text('Yo'),
+        ],
+        // childrenchildren: Permission.values
+        //     .where((permission) {
+        //       if (Platform.isIOS) {
+        //         return permission != Permission.unknown &&
+        //             permission != Permission.phone &&
+        //             permission != Permission.sms &&
+        //             permission != Permission.ignoreBatteryOptimizations &&
+        //             permission != Permission.accessMediaLocation &&
+        //             permission != Permission.activityRecognition &&
+        //             permission != Permission.manageExternalStorage &&
+        //             permission != Permission.systemAlertWindow &&
+        //             permission != Permission.requestInstallPackages &&
+        //             permission != Permission.accessNotificationPolicy &&
+        //             permission != Permission.bluetoothScan &&
+        //             permission != Permission.bluetoothAdvertise &&
+        //             permission != Permission.bluetoothConnect &&
+        //             permission != Permission.nearbyWifiDevices &&
+        //             permission != Permission.videos &&
+        //             permission != Permission.audio &&
+        //             permission != Permission.scheduleExactAlarm &&
+        //             permission != Permission.sensorsAlways;
+        //       } else {
+        //         return permission != Permission.unknown &&
+        //             permission != Permission.mediaLibrary &&
+        //             permission != Permission.photosAddOnly &&
+        //             permission != Permission.reminders &&
+        //             permission != Permission.bluetooth &&
+        //             permission != Permission.appTrackingTransparency &&
+        //             permission != Permission.criticalAlerts &&
+        //             permission != Permission.assistant;
+        //       }
+        //     })
+        //     .map((permission) => PermissionWidget(permission))
+        //     .toList()),: Permission.values
+        //     .where((permission) {
+        //       if (Platform.isIOS) {
+        //         return permission != Permission.unknown &&
+        //             permission != Permission.phone &&
+        //             permission != Permission.sms &&
+        //             permission != Permission.ignoreBatteryOptimizations &&
+        //             permission != Permission.accessMediaLocation &&
+        //             permission != Permission.activityRecognition &&
+        //             permission != Permission.manageExternalStorage &&
+        //             permission != Permission.systemAlertWindow &&
+        //             permission != Permission.requestInstallPackages &&
+        //             permission != Permission.accessNotificationPolicy &&
+        //             permission != Permission.bluetoothScan &&
+        //             permission != Permission.bluetoothAdvertise &&
+        //             permission != Permission.bluetoothConnect &&
+        //             permission != Permission.nearbyWifiDevices &&
+        //             permission != Permission.videos &&
+        //             permission != Permission.audio &&
+        //             permission != Permission.scheduleExactAlarm &&
+        //             permission != Permission.sensorsAlways;
+        //       } else {
+        //         return permission != Permission.unknown &&
+        //             permission != Permission.mediaLibrary &&
+        //             permission != Permission.photosAddOnly &&
+        //             permission != Permission.reminders &&
+        //             permission != Permission.bluetooth &&
+        //             permission != Permission.appTrackingTransparency &&
+        //             permission != Permission.criticalAlerts &&
+        //             permission != Permission.assistant;
+        //       }
+        //     })
+        //     .map((permission) => PermissionWidget(permission))
+        //     .toList()),
+      ),
+    );
+  }
+}
 
-  final List<_PositionItem> _positionItems = <_PositionItem>[];
+/// Permission widget containing information about the passed [Permission]
+class PermissionWidget extends StatefulWidget {
+  /// Constructs a [PermissionWidget] for the supplied [Permission]
+  const PermissionWidget(this._permission);
+
+  final Permission _permission;
+
+  @override
+  _PermissionState createState() => _PermissionState(_permission);
+}
+
+class _PermissionState extends State<PermissionWidget> {
+  _PermissionState(this._permission);
+
+  final Permission _permission;
+  PermissionStatus _permissionStatus = PermissionStatus.denied;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _listenForPermissionStatus();
+  }
+
+  void _listenForPermissionStatus() async {
+    final status = await _permission.status;
+    setState(() => _permissionStatus = status);
+  }
+
+  Color getPermissionColor() {
+    switch (_permissionStatus) {
+      case PermissionStatus.denied:
+        return Colors.red;
+      case PermissionStatus.granted:
+        return Colors.green;
+      case PermissionStatus.limited:
+        return Colors.orange;
+      default:
+        return Colors.grey;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return PopupMenuButton(
-      elevation: 40,
-      onSelected: (value) async {
-        switch (value) {
-          case 1:
-            _getLocationAccuracy();
-            break;
-          case 2:
-            _openLocationSettings();
-            break;
-          default:
-            break;
-        }
+    return ListTile(
+      title: Text(
+        _permission.toString(),
+        style: Theme.of(context).textTheme.bodyLarge,
+      ),
+      subtitle: Text(
+        _permissionStatus.toString(),
+        style: TextStyle(color: getPermissionColor()),
+      ),
+      trailing: (_permission is PermissionWithService)
+          ? IconButton(
+              icon: const Icon(
+                Icons.info,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                checkServiceStatus(
+                    context, _permission as PermissionWithService);
+              })
+          : null,
+      onTap: () {
+        requestPermission(_permission);
       },
-      itemBuilder: (context) => [
-        if (Platform.isIOS)
-          const PopupMenuItem(
-            value: 1,
-            child: Text("Get location accuracy"),
-          ),
-        if (Platform.isAndroid || Platform.isWindows)
-          const PopupMenuItem(
-            value: 2,
-            child: Text("Open location settings"),
-          )
-      ],
     );
   }
 
-  void _openLocationSettings() async {
-    final opened = await _geolocatorPlatform.openLocationSettings();
-    String displayValue;
-
-    if (opened) {
-      displayValue = 'Opened Location Settings';
-    } else {
-      displayValue = 'Error opening Location Settings';
-    }
-
-    _updatePositionList(
-      _PositionItemType.log,
-      displayValue,
-    );
+  void checkServiceStatus(
+      BuildContext context, PermissionWithService permission) async {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text((await permission.serviceStatus).toString()),
+    ));
   }
 
-  void _handleLocationAccuracyStatus(LocationAccuracyStatus status) {
-    String locationAccuracyStatusValue;
+  Future<void> requestPermission(Permission permission) async {
+    final status = await permission.request();
 
-    if (status == LocationAccuracyStatus.precise) {
-      locationAccuracyStatusValue = 'Precise';
-    } else if (status == LocationAccuracyStatus.reduced) {
-      locationAccuracyStatusValue = 'Reduced';
-    } else {
-      locationAccuracyStatusValue = 'Unknown';
-    }
-    _updatePositionList(
-      _PositionItemType.log,
-      '$locationAccuracyStatusValue location accuracy granted.',
-    );
+    setState(() {
+      print(status);
+      _permissionStatus = status;
+      print(_permissionStatus);
+    });
   }
-
-  Future<void> getCurrentPosition() async {  
-    final hasPermission = await _handlePermission();
-
-    if (!hasPermission) {
-      return;
-    }
-
-    final position = await _geolocatorPlatform.getCurrentPosition();
-    _updatePositionList(
-      _PositionItemType.position,
-      position.toString(),
-    );
-  }
-
-  void _updatePositionList(_PositionItemType type, String displayValue) {
-    _positionItems.add(_PositionItem(type, displayValue));
-    setState(() {});
-  }
-
-  Future<bool> _handlePermission() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    // Test if location services are enabled.
-    serviceEnabled = await _geolocatorPlatform.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      // Location services are not enabled don't continue
-      // accessing the position and request users of the
-      // App to enable the location services.
-      _updatePositionList(
-        _PositionItemType.log,
-        PopUpValidation._kLocationServicesDisabledMessage,
-      );
-
-      return false;
-    }
-
-    permission = await _geolocatorPlatform.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await _geolocatorPlatform.requestPermission();
-      if (permission == LocationPermission.denied) {
-        // Permissions are denied, next time you could try
-        // requesting permissions again (this is also where
-        // Android's shouldShowRequestPermissionRationale
-        // returned true. According to Android guidelines
-        // your App should show an explanatory UI now.
-        _updatePositionList(
-          _PositionItemType.log,
-          PopUpValidation._kPermissionDeniedMessage,
-        );
-
-        return false;
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      // Permissions are denied forever, handle appropriately.
-      _updatePositionList(
-        _PositionItemType.log,
-        PopUpValidation._kPermissionDeniedForeverMessage,
-      );
-
-      return false;
-    }
-
-    // When we reach here, permissions are granted and we can
-    // continue accessing the position of the device.
-    _updatePositionList(
-      _PositionItemType.log,
-      PopUpValidation._kPermissionGrantedMessage,
-    );
-    return true;
-  }
-
-  void _getLocationAccuracy() async {
-    final status = await _geolocatorPlatform.getLocationAccuracy();
-    _handleLocationAccuracyStatus(status);
-  }
-}
-
-enum _PositionItemType {
-  log,
-  position,
-}
-
-class _PositionItem {
-  _PositionItem(this.type, this.displayValue);
-
-  final _PositionItemType type;
-  final String displayValue;
 }

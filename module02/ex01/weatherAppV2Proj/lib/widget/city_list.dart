@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
 
 class CityList extends StatefulWidget {
-  final ValueNotifier<String?>  selectedCity;
+  final ValueNotifier<String?> selectedCity;
   final TextEditingController controller;
   final ValueNotifier<List<String>> cityName;
   final ValueNotifier<bool?> currentPosition;
   final FocusNode? focusNode;
-  final bool  showPopup;
-  
-  const CityList({
-    super.key,
-    required this.controller,
-    required this.selectedCity,
-    required this.cityName,
-    required this.currentPosition,
-    required this.showPopup,
-    this.focusNode
-  });
+  final bool showPopup;
+
+  const CityList(
+      {super.key,
+      required this.controller,
+      required this.selectedCity,
+      required this.cityName,
+      required this.currentPosition,
+      required this.showPopup,
+      this.focusNode});
 
   @override
   State<CityList> createState() => _CityListState();
@@ -25,8 +24,8 @@ class CityList extends StatefulWidget {
 class _CityListState extends State<CityList> {
   late TextEditingController controller;
   late FocusNode focusNode;
-  List<String>  filteredSuggestions = [];
-  bool  showPopup = false;
+  List<String> filteredSuggestions = [];
+  bool showPopup = false;
 
   @override
   void initState() {
@@ -43,29 +42,35 @@ class _CityListState extends State<CityList> {
     super.dispose();
   }
 
-  void  _onTextChanged() {
+  void onSearchTextChanged() {
     setState(() {
-      showPopup = controller.text.isNotEmpty;
+      filteredSuggestions = widget.cityName.value
+          .where((city) =>
+              city.toLowerCase().startsWith(controller.text.toLowerCase()))
+          .toList();
     });
   }
 
-  void  onSearchTextChanged() {
-    String  searchText = controller.text;
+  void _onTextChanged() {
     setState(() {
-      filteredSuggestions = widget.cityName.value
-        .where((city) => city.toLowerCase().startsWith(controller.text.toLowerCase()))
-        .toList();
+      if (widget.showPopup) {
+        onSearchTextChanged();
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    if (filteredSuggestions.isEmpty) {
+      print("Is empty");
+    } else {
+      print("Is not empty");
+    }
     return Visibility(
       visible: widget.showPopup && controller.text.isNotEmpty,
       child: Positioned(
         top: 0,
         left: 50,
-        right: 480,
         child: SizedBox(
           height: 50,
           width: 150,
@@ -73,13 +78,12 @@ class _CityListState extends State<CityList> {
             child: ListView.builder(
               itemCount: filteredSuggestions.length,
               itemBuilder: (BuildContext context, int index) {
-                String suggestion = filteredSuggestions[index];
                 return ListTile(
-                  title: Text(suggestion),
+                  title: Text(filteredSuggestions[index]),
                   onTap: () {
                     setState(() {
                       widget.currentPosition.value = false;
-                      widget.selectedCity.value = suggestion;
+                      widget.selectedCity.value = filteredSuggestions[index];
                     });
                   },
                 );

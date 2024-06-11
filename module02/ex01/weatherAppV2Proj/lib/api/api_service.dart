@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:weather_app_v2_proj/widget/city_widget.dart';
 
-class ApiService extends StatefulWidget{
-  final String?  instanceCityName;
+class ApiService extends StatefulWidget {
+  final String? instanceCityName;
   const ApiService({this.instanceCityName, super.key});
 
   @override
@@ -14,18 +14,18 @@ class ApiService extends StatefulWidget{
 }
 
 class _ApiServiceState extends State<ApiService> {
-  String  apiKey = "&appid=7878e44e23e6ec0e62860e109fb8fb76";
-  String  apiUrl = "http://api.openweathermap.org/geo/1.0/direct?q=";
-  String  limit = "&limit=5";
+  String apiKey = "&appid=7878e44e23e6ec0e62860e109fb8fb76";
+  String apiUrl = "http://api.openweathermap.org/geo/1.0/direct?q=";
+  String limit = "&limit=5";
   String? cityName;
 
   @override
-  void  initState() {
+  void initState() {
     super.initState();
     cityName = widget.instanceCityName;
   }
 
-  String  get url => apiUrl + cityName! + limit + apiKey;
+  String get url => apiUrl + cityName! + limit + apiKey;
   Future<http.Response> fetchWeatherData() async {
     final completeUrl = url;
     print(url);
@@ -45,10 +45,14 @@ class _ApiServiceState extends State<ApiService> {
             );
           } else if (snapshot.hasError) {
             return Center(
-              child: Text("Error: ${snapshot.error}"),
+              child: Text(
+                "Error: ${snapshot.error}",
+                style: const TextStyle(fontSize: 14),
+              ),
             );
           } else if (snapshot.hasData) {
-            String  data = "${snapshot.data![0]['lon']}, ${snapshot.data![0]['lat']}";
+            String data =
+                "${snapshot.data![0]['lon']}, ${snapshot.data![0]['lat']}";
             return Center(
               child: Text(data),
             );
@@ -62,7 +66,7 @@ class _ApiServiceState extends State<ApiService> {
     );
   }
 
-  Future<List<dynamic>>  fetchAndDecodeWeatherData() async {
+  Future<List<dynamic>> fetchAndDecodeWeatherData() async {
     final response = await fetchWeatherData();
 
     if (response.statusCode == 200) {
