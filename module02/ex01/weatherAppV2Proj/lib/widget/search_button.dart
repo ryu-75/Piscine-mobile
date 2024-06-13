@@ -76,7 +76,7 @@ class _SearchButtonState extends State<SearchButton> {
               quarterTurns: 1,
               child: GestureDetector(
                 onTap: () {
-                  const PopupPermissions();
+                  // const PopupPermissions();
                   setState(() {
                     widget.selectedCity.value = '';
                     widget.currentPosition.value = true;

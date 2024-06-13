@@ -22,7 +22,7 @@ class GetCardinal {
           );
         } else if (snapshot.hasData) {
           String cardinalValues =
-              "${snapshot.data!.latitude}, ${snapshot.data!.longitude}";
+              "${snapshot.data!.longitude}, ${snapshot.data!.latitude}";
           return Center(
             child: Text(
               cardinalValues,
