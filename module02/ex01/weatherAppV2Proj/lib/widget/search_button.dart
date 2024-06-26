@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
-import 'package:weather_app_v2_proj/api/api_service.dart';
+import 'package:flutter/widgets.dart';
 import 'package:weather_app_v2_proj/widget/city_list.dart';
-import 'package:weather_app_v2_proj/widget/pop_up_validation.dart';
-import 'package:weather_app_v2_proj/widget/popup_permission.dart';
 
 class SearchButton extends StatefulWidget {
   final ValueNotifier<String?> selectedCity;
@@ -32,6 +29,7 @@ class _SearchButtonState extends State<SearchButton> {
   late FocusNode focusNode;
   List<String> filteredSuggestions = [];
   bool showPopup = false;
+
   @override
   void initState() {
     super.initState();
@@ -76,7 +74,6 @@ class _SearchButtonState extends State<SearchButton> {
               quarterTurns: 1,
               child: GestureDetector(
                 onTap: () {
-                  // const PopupPermissions();
                   setState(() {
                     widget.selectedCity.value = '';
                     widget.currentPosition.value = true;
@@ -106,7 +103,7 @@ class _SearchButtonState extends State<SearchButton> {
     return Stack(
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 30),
+          padding: const EdgeInsets.only(left: 0),
           child: ElevatedButton.icon(
             label: KeyboardListener(
               focusNode: focusNode,
@@ -159,21 +156,12 @@ class _SearchButtonState extends State<SearchButton> {
             width: 200,
             height: 50,
             child: Card(
-              child: ListView.builder(
-                itemCount: filteredSuggestions.length,
-                itemBuilder: (BuildContext context, int index) {
-                  String suggestion = filteredSuggestions[index];
-                  return ListTile(
-                    title: Text(suggestion),
-                    onTap: () {
-                      setState(() {
-                        widget.currentPosition.value = false;
-                        widget.selectedCity.value = suggestion;
-                      });
-                    },
-                  );
-                },
-              ),
+              child: CityList(
+                  controller: controller,
+                  selectedCity: widget.selectedCity,
+                  cityName: widget.cityName,
+                  currentPosition: widget.currentPosition,
+                  showPopup: showPopup),
             ),
           ),
         ],

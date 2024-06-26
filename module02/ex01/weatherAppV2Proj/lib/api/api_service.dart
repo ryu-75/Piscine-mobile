@@ -1,9 +1,7 @@
 import 'dart:convert';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:weather_app_v2_proj/widget/city_widget.dart';
 
 class ApiService extends StatefulWidget {
   final String? instanceCityName;
@@ -26,6 +24,7 @@ class _ApiServiceState extends State<ApiService> {
   }
 
   String get url => apiUrl + cityName! + limit + apiKey;
+
   Future<http.Response> fetchWeatherData() async {
     final completeUrl = url;
     print(url);
@@ -34,7 +33,6 @@ class _ApiServiceState extends State<ApiService> {
 
   @override
   Widget build(BuildContext context) {
-    print("$cityName");
     return Center(
       child: FutureBuilder<List<dynamic>>(
         future: fetchAndDecodeWeatherData(),
