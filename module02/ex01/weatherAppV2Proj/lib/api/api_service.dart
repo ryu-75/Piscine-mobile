@@ -68,7 +68,6 @@ class _ApiServiceState extends State<ApiService> {
     final response = await fetchWeatherData();
 
     if (response.statusCode == 200) {
-      print(response.body);
       return jsonDecode(response.body);
     } else {
       throw Exception("Data cannot fetch");

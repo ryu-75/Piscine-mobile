@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:weather_app_v2_proj/widget/city_list.dart';
 
 class SearchButton extends StatefulWidget {

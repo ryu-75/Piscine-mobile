@@ -15,13 +15,10 @@ class PopupPermissions extends StatelessWidget {
                 onPressed: () {
                   RequestPermissionManager(PermissionType.whenInUseLocation)
                       .onPermissionDenied(() {
-                    // Handle permission denied for location
                     print('Location permission denied');
                   }).onPermissionGranted(() {
-                    // Handle permission granted for location
                     print('Location permission granted');
                   }).onPermissionPermanentlyDenied(() {
-                    // Handle permission permanently denied for location
                     print('Location permission permanently denied');
                   }).execute();
                 },

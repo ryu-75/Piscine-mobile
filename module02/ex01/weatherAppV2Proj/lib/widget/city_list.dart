@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import 'package:weather_app_v2_proj/model/suggestion_model.dart';
 
 class CityList extends StatefulWidget {
   final ValueNotifier<String?> selectedCity;
@@ -28,15 +30,13 @@ class CityList extends StatefulWidget {
 class _CityListState extends State<CityList> {
   late TextEditingController controller;
   late FocusNode focusNode;
-
-  List<dynamic> filteredSuggestions = [];
+  late List<dynamic> filteredSuggestions;
 
   bool showPopup = false;
   String apiKey = "&appid=7878e44e23e6ec0e62860e109fb8fb76";
   String apiUrl = "http://api.openweathermap.org/geo/1.0/direct?q=";
   String limit = "&limit=5";
   String? cityName;
-  String get url => apiUrl + cityName! + limit + apiKey;
 
   @override
   void initState() {
@@ -59,36 +59,35 @@ class _CityListState extends State<CityList> {
       if (controller.text.isNotEmpty) {
         fetchWeatherData(controller.text);
       } else {
-        setState(() {
-          filteredSuggestions = [];
-        });
+        Provider.of<SuggestionModel>(context, listen: false)
+            .updateSuggestions([]);
       }
     });
   }
 
   Future<void> fetchWeatherData(String query) async {
-    final completeUrl = apiUrl + query + limit + apiKey;
+    final completeUrl = "$apiUrl$query$limit$apiKey";
     try {
       final response = await http.get(Uri.parse(completeUrl));
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
-        setState(() {
-          filteredSuggestions = data
-              .map((item) => {
-                    "name": item["name"],
-                    "country": item["country"],
-                    "state": item["state"],
-                  })
-              .toList();
-        });
+        Provider.of<SuggestionModel>(context, listen: false)
+            .updateSuggestions(data
+                .map((item) => {
+                      "name": item["name"],
+                      "country": item["country"],
+                      "state": item["state"],
+                      "lon": item["lon"],
+                      "lat": item["lat"]
+                    })
+                .toList());
       } else {
         throw Exception("Data cannot fetch");
       }
     } catch (e) {
       print("Error: $e");
-      setState(() {
-        filteredSuggestions = [];
-      });
+      Provider.of<SuggestionModel>(context, listen: false)
+          .updateSuggestions([]);
     }
   }
 
@@ -98,6 +97,10 @@ class _CityListState extends State<CityList> {
     double screenHeight = MediaQuery.of(context).size.height;
     double maxDimension =
         screenWidth > screenHeight ? screenWidth : screenHeight;
+
+    List<dynamic> filteredSuggestions =
+        Provider.of<SuggestionModel>(context).filteredSuggestion;
+
     return Visibility(
       visible: widget.showPopup && controller.text.isNotEmpty,
       child: SizedBox(
@@ -114,19 +117,27 @@ class _CityListState extends State<CityList> {
             itemBuilder: (BuildContext context, int index) {
               final suggestion = filteredSuggestions[index];
               final List<String> suggestionParts = [
-                suggestion['name'],
                 suggestion['state'] ?? '',
                 suggestion['country']
               ];
               return ListTile(
-                title: Text(suggestionParts.join(', ')),
+                title: Text(
+                  suggestion['name'],
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text(suggestionParts[0].isNotEmpty
+                    ? suggestionParts.join(', ')
+                    : suggestionParts[1]),
                 onTap: () {
                   setState(() {
                     FocusManager.instance.primaryFocus?.unfocus();
                     widget.currentPosition.value = false;
-                    widget.selectedCity.value = suggestionParts.join(', ');
-                    controller.text = suggestionParts.join(', ');
-                    filteredSuggestions = [];
+                    widget.selectedCity.value =
+                        suggestion['name'] + ', ' + suggestionParts.join(', ');
+                    controller.text =
+                        suggestion['name'] + ', ' + suggestionParts.join(', ');
+                    Provider.of<SuggestionModel>(context, listen: false)
+                        .updateSuggestions([]);
                     showPopup = false;
                     controller.text = "";
                   });
@@ -139,7 +150,3 @@ class _CityListState extends State<CityList> {
     );
   }
 }
-
-// Pop up display correctly but it's still empty
-// We should to retrieve each element (city, country, state from API)
-// And showing all occurence from API data 

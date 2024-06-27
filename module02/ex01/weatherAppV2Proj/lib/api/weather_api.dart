@@ -6,14 +6,12 @@ import 'package:weather_app_v2_proj/utils/geolocation.dart';
 import 'package:http/http.dart' as http;
 
 class GetCardinal {
-  String apiKey = "&appid=7878e44e23e6ec0e62860e109fb8fb76";
+  String apiKey = "7878e44e23e6ec0e62860e109fb8fb76";
   String apiUrl = "http://api.openweathermap.org/geo/1.0/reverse?";
-  String apiUrls = "http://api.openweathermap.org/geo/1.0";
   String cityname = "";
 
   Future<String> fetchCityName(String longitude, String latitude) async {
-    final completeUrl =
-        apiUrl + "lat=${latitude}" + "&lon=${longitude}" + apiKey;
+    final completeUrl = "${apiUrl}lat=$latitude&lon=$longitude&appid=$apiKey";
     try {
       final response = await http.get(Uri.parse(completeUrl));
       if (response.statusCode == 200) {
@@ -68,7 +66,7 @@ class GetCardinal {
               } else if (citySnapshot.hasData) {
                 return Center(
                   child: Text(
-                    citySnapshot.data!,
+                    "${citySnapshot.data!}\n$latitude, $longitude",
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 32,
