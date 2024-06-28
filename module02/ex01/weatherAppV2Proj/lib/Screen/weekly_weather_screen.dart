@@ -5,16 +5,17 @@ class WeeklyWeatherScreenView extends StatelessWidget {
   final ValueNotifier<String?> selectedCity;
   final ValueNotifier<bool> selectedPosition;
   final List<dynamic> filteredSuggestions;
+  final ValueNotifier<String> status;
 
   const WeeklyWeatherScreenView(
       {required this.selectedCity,
       required this.selectedPosition,
+      required this.status,
       this.filteredSuggestions = const [],
       super.key});
 
   @override
   Widget build(BuildContext context) {
-    String status = "weekly";
     return Scaffold(
       body: Center(
         child: Column(

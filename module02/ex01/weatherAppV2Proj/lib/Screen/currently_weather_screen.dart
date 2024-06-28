@@ -7,16 +7,17 @@ class CurrentlyWeatherScreenView extends StatelessWidget {
   final ValueNotifier<bool> selectedPosition;
   final ApiService apiService = const ApiService();
   final List<dynamic> filteredSuggestions;
+  final ValueNotifier<String> status;
 
   const CurrentlyWeatherScreenView(
       {required this.selectedCity,
       required this.selectedPosition,
+      required this.status,
       this.filteredSuggestions = const [],
       super.key});
 
   @override
   Widget build(BuildContext context) {
-    String status = "currently";
     return Scaffold(
       body: Center(
         child: Column(

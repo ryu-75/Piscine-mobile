@@ -4,10 +4,12 @@ import 'package:weather_app_v2_proj/widget/city_widget.dart';
 
 class UtilsMethod {
   Widget selectedPosition(String? cityname, bool? currentPosition,
-      String? status, List<dynamic> filteredSuggestions) {
-    if (cityname != '') {
+      ValueNotifier<String> status, List<dynamic> filteredSuggestions) {
+    if (cityname != "") {
       return (CityWidget(
-          city: cityname, filteredSuggestions: filteredSuggestions));
+          city: cityname,
+          filteredSuggestions: filteredSuggestions,
+          status: status));
     } else if (currentPosition == true) {
       return GetCardinal().getCardinal();
     }

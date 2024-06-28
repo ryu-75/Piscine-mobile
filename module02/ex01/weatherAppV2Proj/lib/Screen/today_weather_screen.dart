@@ -5,16 +5,17 @@ class TodayWeatherScreenView extends StatelessWidget {
   final ValueNotifier<String?> selectedCity;
   final ValueNotifier<bool> selectedPosition;
   final List<dynamic> filteredSuggestions;
+  final ValueNotifier<String> status;
 
   const TodayWeatherScreenView(
       {required this.selectedCity,
       required this.selectedPosition,
+      required this.status,
       this.filteredSuggestions = const [],
       super.key});
 
   @override
   Widget build(BuildContext context) {
-    String status = "today";
     return Scaffold(
       body: Center(
         child: Column(
@@ -25,7 +26,8 @@ class TodayWeatherScreenView extends StatelessWidget {
               builder: (context, cityName, child) {
                 return ValueListenableBuilder<bool>(
                     valueListenable: selectedPosition,
-                    builder: (context, currentPos, child) {
+                    builder:
+                        (BuildContext context, bool currentPos, Widget? child) {
                       return UtilsMethod().selectedPosition(
                           cityName, currentPos, status, filteredSuggestions);
                     });

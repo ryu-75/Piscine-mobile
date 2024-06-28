@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:weather_app_v2_proj/model/suggestion_model.dart';
@@ -49,6 +50,8 @@ class _MyHomePageState extends State<MyHomePage> {
   final FocusNode _focusNode = FocusNode();
   final bool showPopup = true;
 
+  ValueNotifier<String> statusNotifier = ValueNotifier<String>("currently");
+
   int selectedIndex = 0;
 
   final ValueNotifier<String?> selectedCityNotifier =
@@ -64,6 +67,7 @@ class _MyHomePageState extends State<MyHomePage> {
     selectedCityNotifier.dispose();
     cityNameNotifier.dispose();
     currentPositionNotifier.dispose();
+    statusNotifier.dispose();
     super.dispose();
   }
 
@@ -72,6 +76,7 @@ class _MyHomePageState extends State<MyHomePage> {
     List<dynamic> filteredSuggestions =
         context.watch<SuggestionModel>().filteredSuggestion;
     print("$filteredSuggestions");
+    // print("status: $status");
     return Scaffold(
       appBar: appBarTop(),
       body: Stack(
@@ -81,22 +86,32 @@ class _MyHomePageState extends State<MyHomePage> {
             onPageChanged: (index) {
               setState(() {
                 selectedIndex = index;
+                if (index == 0) {
+                  statusNotifier.value = "currently";
+                } else if (index == 1) {
+                  statusNotifier.value = "today";
+                } else {
+                  statusNotifier.value = "weekly";
+                }
               });
             },
             children: <Widget>[
               CurrentlyWeatherScreenView(
                   selectedCity: selectedCityNotifier,
                   selectedPosition: currentPositionNotifier,
+                  status: statusNotifier,
                   filteredSuggestions:
                       Provider.of<SuggestionModel>(context).filteredSuggestion),
               TodayWeatherScreenView(
                   selectedCity: selectedCityNotifier,
                   selectedPosition: currentPositionNotifier,
+                  status: statusNotifier,
                   filteredSuggestions:
                       Provider.of<SuggestionModel>(context).filteredSuggestion),
               WeeklyWeatherScreenView(
                   selectedCity: selectedCityNotifier,
                   selectedPosition: currentPositionNotifier,
+                  status: statusNotifier,
                   filteredSuggestions:
                       Provider.of<SuggestionModel>(context).filteredSuggestion),
             ],
