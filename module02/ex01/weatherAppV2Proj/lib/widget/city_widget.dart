@@ -40,13 +40,13 @@ class _CityWidgetState extends State<CityWidget> {
 
   Future<void> fetchWeatherData() async {
     final completeUrl =
-        "${apiUrl}latitude=${widget.filteredSuggestions[0]['lat']}&longitude=${widget.filteredSuggestions[0]['lon']}&current=temperature_2m,wind_speed_10m&hourly=temperature_2m,wind_speed_10m";
+        "${apiUrl}latitude=${widget.filteredSuggestions[0]['lat']}&longitude=${widget.filteredSuggestions[0]['lon']}&current=temperature_2m,wind_speed_10m&hourly=temperature_2m,visibility,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max";
     try {
       final response = await http.get(Uri.parse(completeUrl));
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
-        // print(data['hourly']);
-        // print("\n");
+        print(data['daily']);
+        print("\n");
         // print(data['hourly']['temperature_2m']);
         // print("\n");
         // print(data['hourly']['wind_speed_10m']);
@@ -104,9 +104,70 @@ class _CityWidgetState extends State<CityWidget> {
               currentlyWeather(),
             if (weatherData != null && widget.status.value == "today")
               todayWeather(),
+            if (weatherData != null && widget.status.value == "weekly")
+              weeklyWeather(),
           ],
         ),
       ),
+    );
+  }
+
+  Column weeklyWeather() {
+    Map<String, dynamic> weeklyWeatherData = getWeeklyDate();
+    print(weeklyWeatherData);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: weeklyWeatherData.keys.map<Widget>((value) {
+        String label = weeklyWeatherData[value]!;
+        int index = weeklyWeatherData.keys.toList().indexOf(value);
+        String minusTemp =
+            "${weatherData!['daily']['temperature_2m_min'][index]}";
+        String maxTemp =
+            "${weatherData!['daily']['temperature_2m_max'][index]}";
+        String wmoCode = "${weatherData!['daily']['weather_code'][index]}";
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Column(
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+              Column(
+                children: [
+                  Text(
+                    "$minusTemp°C",
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ],
+              ),
+              Column(
+                children: [
+                  Text(
+                    "$maxTemp°C",
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ],
+              ),
+              Column(
+                children: [
+                  Text(
+                    wmoCode,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      }).toList(),
     );
   }
 
@@ -117,14 +178,12 @@ class _CityWidgetState extends State<CityWidget> {
           "${weatherData!['current']['temperature_2m']}°C",
           style: const TextStyle(
             fontSize: 16,
-            fontWeight: FontWeight.bold,
           ),
         ),
         Text(
           "${weatherData!['current']['wind_speed_10m']} Km/h",
           style: const TextStyle(
             fontSize: 16,
-            fontWeight: FontWeight.bold,
           ),
         ),
       ],
@@ -132,33 +191,89 @@ class _CityWidgetState extends State<CityWidget> {
   }
 
   Column todayWeather() {
+    Map<String, dynamic> timeMap = convertDataFormat();
     return Column(
-      children: [
-        SingleChildScrollView(
-          child: Column(
-            children: weatherData!['hourly'].keys.map<Widget>((key) {
-              return Padding(
-                padding: const EdgeInsets.all(1.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      key,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: timeMap.keys.map<Widget>((time) {
+        String label = timeMap[time]!;
+        int index = timeMap.keys.toList().indexOf(time);
+        String temperature =
+            "${weatherData!['hourly']['temperature_2m'][index]}";
+        String windSpeed = "${weatherData!['hourly']['wind_speed_10m'][index]}";
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Column(
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 16,
                     ),
-                    ...List<Widget>.generate(
-                      weatherData!['hourly'][key].length,
-                      (index) => Text(
-                        "${weatherData!['hourly'][key][index]}",
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
+                  ),
+                ],
+              ),
+              Column(
+                children: [
+                  Text(
+                    "$temperature°C",
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ],
+              ),
+              Column(
+                children: [
+                  Text(
+                    "$windSpeed Km/h",
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ),
-      ],
+        );
+      }).toList(),
     );
+  }
+
+  Map<String, dynamic> convertDataFormat() {
+    Map<String, dynamic> timeMap = {};
+
+    if (weatherData != null &&
+        weatherData!['hourly'] != null &&
+        weatherData!['hourly']['time'] != null) {
+      List<dynamic> timeString = weatherData!['hourly']['time'];
+      List<dynamic> timeList = [];
+
+      for (int i = 0; i < timeString.length; i++) {
+        timeList = timeString[i].split("T");
+        if (timeList.length > 1) {
+          String time = timeList[1].substring(0, 5);
+
+          timeMap[time] = time;
+        }
+      }
+    }
+    return (timeMap);
+  }
+
+  Map<String, dynamic> getWeeklyDate() {
+    Map<String, dynamic> weeklyData = {};
+
+    if (weatherData != null &&
+        weatherData!['daily'] != null &&
+        weatherData!['daily']['time'] != null) {
+      List<dynamic> timeString = weatherData!['daily']['time'];
+      List<dynamic> weeklyList = [];
+
+      for (int i = 0; i < timeString.length; i++) {
+        weeklyList = timeString[i].split(',');
+        weeklyData[weeklyList[0]] = weeklyList[0];
+      }
+    }
+    return weeklyData;
   }
 }
