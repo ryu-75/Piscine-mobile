@@ -48,7 +48,6 @@ class _MyHomePageState extends State<MyHomePage> {
   final myController = TextEditingController();
   final PageController _pageController = PageController();
   final FocusNode _focusNode = FocusNode();
-  final bool showPopup = true;
 
   ValueNotifier<String> statusNotifier = ValueNotifier<String>("currently");
 
@@ -73,10 +72,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    List<dynamic> filteredSuggestions =
-        context.watch<SuggestionModel>().filteredSuggestion;
-    print("$filteredSuggestions");
-    // print("status: $status");
     return Scaffold(
       appBar: appBarTop(),
       body: Stack(
@@ -121,7 +116,6 @@ class _MyHomePageState extends State<MyHomePage> {
             selectedCity: selectedCityNotifier,
             cityName: cityNameNotifier,
             currentPosition: currentPositionNotifier,
-            showPopup: true,
           ),
         ],
       ),
@@ -170,7 +164,7 @@ class _MyHomePageState extends State<MyHomePage> {
         cityName: cityNameNotifier,
         currentPosition: currentPositionNotifier,
         focusNode: _focusNode,
-        showPopup: true,
+        providerError: Provider.of<SuggestionModel>(context).errorMessage,
       ),
     );
   }

@@ -11,7 +11,7 @@ class WeeklyWeatherScreenView extends StatelessWidget {
       {required this.selectedCity,
       required this.selectedPosition,
       required this.status,
-      this.filteredSuggestions = const [],
+      required this.filteredSuggestions,
       super.key});
 
   @override
@@ -28,7 +28,11 @@ class WeeklyWeatherScreenView extends StatelessWidget {
                       valueListenable: selectedPosition,
                       builder: (contexte, currentPos, child) {
                         return UtilsMethod().selectedPosition(
-                            cityName, currentPos, status, filteredSuggestions);
+                          cityName,
+                          currentPos,
+                          status,
+                          filteredSuggestions,
+                        );
                       });
                 })
           ],

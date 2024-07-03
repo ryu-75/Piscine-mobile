@@ -13,7 +13,7 @@ class CurrentlyWeatherScreenView extends StatelessWidget {
       {required this.selectedCity,
       required this.selectedPosition,
       required this.status,
-      this.filteredSuggestions = const [],
+      required this.filteredSuggestions,
       super.key});
 
   @override

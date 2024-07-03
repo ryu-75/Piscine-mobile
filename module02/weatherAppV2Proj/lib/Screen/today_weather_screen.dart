@@ -11,7 +11,7 @@ class TodayWeatherScreenView extends StatelessWidget {
       {required this.selectedCity,
       required this.selectedPosition,
       required this.status,
-      this.filteredSuggestions = const [],
+      required this.filteredSuggestions,
       super.key});
 
   @override
@@ -29,7 +29,11 @@ class TodayWeatherScreenView extends StatelessWidget {
                     builder:
                         (BuildContext context, bool currentPos, Widget? child) {
                       return UtilsMethod().selectedPosition(
-                          cityName, currentPos, status, filteredSuggestions);
+                        cityName,
+                        currentPos,
+                        status,
+                        filteredSuggestions,
+                      );
                     });
               },
             )

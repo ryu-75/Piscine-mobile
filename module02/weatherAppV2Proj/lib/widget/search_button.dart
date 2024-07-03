@@ -8,7 +8,7 @@ class SearchButton extends StatefulWidget {
   final ValueNotifier<List<String>> cityName;
   final ValueNotifier<bool?> currentPosition;
   final FocusNode? focusNode;
-  final bool showPopup;
+  final String providerError;
 
   const SearchButton(
       {super.key,
@@ -16,7 +16,7 @@ class SearchButton extends StatefulWidget {
       required this.selectedCity,
       required this.cityName,
       required this.currentPosition,
-      required this.showPopup,
+      required this.providerError,
       this.focusNode});
 
   @override
@@ -27,7 +27,6 @@ class _SearchButtonState extends State<SearchButton> {
   late TextEditingController controller;
   late FocusNode focusNode;
   List<String> filteredSuggestions = [];
-  bool showPopup = false;
 
   @override
   void initState() {
@@ -46,12 +45,6 @@ class _SearchButtonState extends State<SearchButton> {
 
   void _onTextChanged() {
     setState(() {
-      showPopup = controller.text.isNotEmpty;
-    });
-  }
-
-  void onSearchTextChanged() {
-    setState(() {
       filteredSuggestions = widget.cityName.value
           .where((city) =>
               city.toLowerCase().startsWith(controller.text.toLowerCase()))
@@ -63,38 +56,43 @@ class _SearchButtonState extends State<SearchButton> {
   Widget build(BuildContext context) {
     MediaQueryData queryData = MediaQuery.of(context);
     double screenWidth = queryData.size.width;
+
     return Column(
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             searchButton(screenWidth),
-            RotatedBox(
-              quarterTurns: 1,
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    widget.selectedCity.value = '';
-                    widget.currentPosition.value = true;
-                  });
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.grey.withOpacity(0.5),
-                  ),
-                  child: const Icon(
-                    Icons.navigation_outlined,
-                    size: 30,
-                    color: Color.fromARGB(220, 238, 238, 238),
-                  ),
-                ),
-              ),
-            ),
+            locationButton(),
           ],
         ),
       ],
+    );
+  }
+
+  RotatedBox locationButton() {
+    return RotatedBox(
+      quarterTurns: 1,
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            widget.selectedCity.value = '';
+            widget.currentPosition.value = true;
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.grey.withOpacity(0.5),
+          ),
+          child: const Icon(
+            Icons.navigation_outlined,
+            size: 30,
+            color: Color.fromARGB(220, 238, 238, 238),
+          ),
+        ),
+      ),
     );
   }
 
@@ -109,15 +107,7 @@ class _SearchButtonState extends State<SearchButton> {
               onKeyEvent: (e) {
                 if (e is KeyDownEvent &&
                     e.logicalKey == LogicalKeyboardKey.enter) {
-                  setState(() {
-                    String newValue = controller.text;
-                    if (newValue.isNotEmpty) {
-                      widget.selectedCity.value = newValue;
-                      widget.cityName.value.clear();
-                      widget.cityName.value.add(widget.selectedCity.value!);
-                      controller.text = '';
-                    }
-                  });
+                  _updateSelectedCity();
                 }
               },
               child: SizedBox(
@@ -128,15 +118,7 @@ class _SearchButtonState extends State<SearchButton> {
             icon: const Icon(Icons.search),
             autofocus: false,
             onPressed: () {
-              setState(() {
-                String newValue = controller.text;
-                if (newValue.isNotEmpty) {
-                  widget.selectedCity.value = newValue;
-                  widget.cityName.value.add(widget.selectedCity.value!);
-                  controller.text = '';
-                  controller.clear();
-                }
-              });
+              _updateSelectedCity();
             },
           ),
         ),
@@ -144,11 +126,21 @@ class _SearchButtonState extends State<SearchButton> {
     );
   }
 
+  void _updateSelectedCity() {
+    return setState(() {
+      String newValue = controller.text;
+      if (newValue.isNotEmpty) {
+        widget.selectedCity.value = newValue;
+        widget.cityName.value.clear();
+        widget.cityName.value.add(widget.selectedCity.value!);
+        controller.text = '';
+      }
+    });
+  }
+
   Visibility cityList() {
     return Visibility(
-      visible: widget.showPopup &&
-          filteredSuggestions.isNotEmpty &&
-          controller.text.isNotEmpty,
+      visible: filteredSuggestions.isNotEmpty && controller.text.isNotEmpty,
       child: Column(
         children: [
           SizedBox(
@@ -159,8 +151,7 @@ class _SearchButtonState extends State<SearchButton> {
                   controller: controller,
                   selectedCity: widget.selectedCity,
                   cityName: widget.cityName,
-                  currentPosition: widget.currentPosition,
-                  showPopup: showPopup),
+                  currentPosition: widget.currentPosition),
             ),
           ),
         ],
@@ -182,15 +173,7 @@ class _SearchButtonState extends State<SearchButton> {
         });
       },
       onSubmitted: (String? text) {
-        setState(() {
-          String newValue = controller.text;
-          if (newValue.isNotEmpty) {
-            widget.selectedCity.value = newValue;
-            widget.cityName.value.clear();
-            widget.cityName.value.add(widget.selectedCity.value!);
-            controller.text = '';
-          }
-        });
+        _updateSelectedCity();
       },
       decoration: const InputDecoration(
         enabledBorder: UnderlineInputBorder(
