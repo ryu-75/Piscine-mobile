@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -59,6 +60,8 @@ class _CityListState extends State<CityList> {
       } else {
         Provider.of<SuggestionModel>(context, listen: false)
             .updateSuggestions([]);
+        Provider.of<SuggestionModel>(context, listen: false).setErrorMessage(
+            "Could not find any result for the supplied address or coordinates.");
         showPopup = false;
       }
     });
@@ -69,45 +72,38 @@ class _CityListState extends State<CityList> {
     try {
       final response = await http.get(Uri.parse(completeUrl));
       final List<dynamic> data = jsonDecode(response.body);
+
+      if (!mounted) return;
+
       if (response.statusCode == 200) {
         if (data.isEmpty) {
-          if (mounted) {
-            Provider.of<SuggestionModel>(context, listen: false)
-                .updateSuggestions([]);
-            Provider.of<SuggestionModel>(context, listen: false).setErrorMessage(
-                "Could not find any result for the supplied address or coordinates.");
-          }
+          Provider.of<SuggestionModel>(context, listen: false)
+              .updateSuggestions([]);
+          Provider.of<SuggestionModel>(context, listen: false).setErrorMessage(
+              "Could not find any result for the supplied address or coordinates.");
         } else {
-          if (mounted) {
-            Provider.of<SuggestionModel>(context, listen: false)
-                .updateSuggestions(data
-                    .map((item) => {
-                          "name": item["name"],
-                          "country": item["country"],
-                          "state": item["state"],
-                          "lon": item["lon"],
-                          "lat": item["lat"]
-                        })
-                    .toList());
-            Provider.of<SuggestionModel>(context, listen: false)
-                .setErrorMessage("");
-          }
+          Provider.of<SuggestionModel>(context, listen: false)
+              .updateSuggestions(data
+                  .map((item) => {
+                        "name": item["name"],
+                        "country": item["country"],
+                        "state": item["state"],
+                        "lon": item["lon"],
+                        "lat": item["lat"]
+                      })
+                  .toList());
+          Provider.of<SuggestionModel>(context, listen: false)
+              .setErrorMessage("");
         }
       } else {
-        if (mounted) {
-          Provider.of<SuggestionModel>(context, listen: false)
-              .setErrorMessage("Failed to fetch data from API.");
-        }
+        Provider.of<SuggestionModel>(context, listen: false)
+            .setErrorMessage("Failed to fetch data from API.");
       }
     } catch (e) {
-      if (mounted) {
-        Provider.of<SuggestionModel>(context, listen: false)
-            .setErrorMessage("An error occurred: ${e.toString()}");
-      }
-      if (mounted) {
-        Provider.of<SuggestionModel>(context, listen: false)
-            .updateSuggestions([]);
-      }
+      Provider.of<SuggestionModel>(context, listen: false)
+          .setErrorMessage("An error occurred: ${e.toString()}");
+      Provider.of<SuggestionModel>(context, listen: false)
+          .updateSuggestions([]);
     }
   }
 
@@ -121,62 +117,50 @@ class _CityListState extends State<CityList> {
     List<dynamic> filteredSuggestions =
         Provider.of<SuggestionModel>(context).filteredSuggestion;
     String errorMessage = Provider.of<SuggestionModel>(context).errorMessage;
-    if (errorMessage.isNotEmpty) {
-      return Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Center(
-          child: Text(
-            errorMessage,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.red),
-          ),
-        ),
-      );
-    } else {
-      return GestureDetector(
-        onTap: () {
-          setState(() {
-            showPopup = false;
-          });
-        },
-        child: Visibility(
-          visible: showPopup,
-          child: SizedBox(
-            height: maxDimension,
-            width: maxDimension,
-            child: Card(
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.zero,
-              ),
-              child: ListView.separated(
-                itemCount: filteredSuggestions.length,
-                separatorBuilder: (BuildContext context, int index) =>
-                    const Divider(),
-                itemBuilder: (BuildContext context, int index) {
-                  final suggestion = filteredSuggestions[index];
-                  final List<String> suggestionParts = [
-                    suggestion['state'] ?? '',
-                    suggestion['country']
-                  ];
-                  return ListTile(
-                    title: Text(
-                      suggestion['name'],
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(suggestionParts[0].isNotEmpty
-                        ? suggestionParts.join(', ')
-                        : suggestionParts[1]),
-                    onTap: () {
-                      _updateCitySearched(suggestion, suggestionParts, context);
-                    },
-                  );
-                },
-              ),
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          showPopup = false;
+        });
+      },
+      child: Visibility(
+        visible: showPopup,
+        child: SizedBox(
+          height: maxDimension,
+          width: maxDimension,
+          child: Card(
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.zero,
+            ),
+            child: ListView.separated(
+              itemCount: filteredSuggestions.length,
+              separatorBuilder: (BuildContext context, int index) =>
+                  const Divider(),
+              itemBuilder: (BuildContext context, int index) {
+                final suggestion = filteredSuggestions[index];
+                final List<String> suggestionParts = [
+                  suggestion['state'] ?? '',
+                  suggestion['country']
+                ];
+                return ListTile(
+                  title: Text(
+                    suggestion['name'],
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(suggestionParts[0].isNotEmpty
+                      ? suggestionParts.join(', ')
+                      : suggestionParts[1]),
+                  onTap: () {
+                    _updateCitySearched(suggestion, suggestionParts, context);
+                  },
+                );
+              },
             ),
           ),
         ),
-      );
-    }
+      ),
+    );
   }
 
   void _updateCitySearched(

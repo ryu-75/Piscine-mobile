@@ -1,3 +1,4 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:weather_app_v2_proj/widget/city_list.dart';
@@ -10,14 +11,15 @@ class SearchButton extends StatefulWidget {
   final FocusNode? focusNode;
   final String providerError;
 
-  const SearchButton(
-      {super.key,
-      required this.controller,
-      required this.selectedCity,
-      required this.cityName,
-      required this.currentPosition,
-      required this.providerError,
-      this.focusNode});
+  const SearchButton({
+    super.key,
+    required this.controller,
+    required this.selectedCity,
+    required this.cityName,
+    required this.currentPosition,
+    required this.providerError,
+    this.focusNode,
+  });
 
   @override
   State<SearchButton> createState() => _SearchButtonState();
@@ -27,6 +29,7 @@ class _SearchButtonState extends State<SearchButton> {
   late TextEditingController controller;
   late FocusNode focusNode;
   List<String> filteredSuggestions = [];
+  bool isConnected = true;
 
   @override
   void initState() {
@@ -35,6 +38,7 @@ class _SearchButtonState extends State<SearchButton> {
     focusNode = widget.focusNode ?? FocusNode();
 
     controller.addListener(_onTextChanged);
+    _checkConnectivity();
   }
 
   @override
@@ -52,6 +56,13 @@ class _SearchButtonState extends State<SearchButton> {
     });
   }
 
+  Future<void> _checkConnectivity() async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    setState(() {
+      isConnected = connectivityResult != ConnectivityResult.none;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     MediaQueryData queryData = MediaQuery.of(context);
@@ -66,6 +77,15 @@ class _SearchButtonState extends State<SearchButton> {
             locationButton(),
           ],
         ),
+        if (!isConnected)
+          const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Text(
+              'No internet connection. Please check your connection and try again.',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        cityList(),
       ],
     );
   }
@@ -104,12 +124,6 @@ class _SearchButtonState extends State<SearchButton> {
           child: ElevatedButton.icon(
             label: KeyboardListener(
               focusNode: focusNode,
-              onKeyEvent: (e) {
-                if (e is KeyDownEvent &&
-                    e.logicalKey == LogicalKeyboardKey.enter) {
-                  _updateSelectedCity();
-                }
-              },
               child: SizedBox(
                 width: screenWidth * 0.4,
                 child: textField(screenWidth),
@@ -127,13 +141,27 @@ class _SearchButtonState extends State<SearchButton> {
   }
 
   void _updateSelectedCity() {
-    return setState(() {
+    if (!isConnected) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No internet connection. Please try again later.'),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
       String newValue = controller.text;
-      if (newValue.isNotEmpty) {
+      if (newValue.isNotEmpty && widget.providerError.isNotEmpty) {
         widget.selectedCity.value = newValue;
         widget.cityName.value.clear();
         widget.cityName.value.add(widget.selectedCity.value!);
-        controller.text = '';
+        controller.text = "";
+      } else {
+        newValue = "";
+        widget.selectedCity.value = newValue;
+        widget.cityName.value.clear();
+        controller.text = "";
       }
     });
   }
@@ -148,10 +176,11 @@ class _SearchButtonState extends State<SearchButton> {
             height: 50,
             child: Card(
               child: CityList(
-                  controller: controller,
-                  selectedCity: widget.selectedCity,
-                  cityName: widget.cityName,
-                  currentPosition: widget.currentPosition),
+                controller: controller,
+                selectedCity: widget.selectedCity,
+                cityName: widget.cityName,
+                currentPosition: widget.currentPosition,
+              ),
             ),
           ),
         ],
@@ -159,33 +188,44 @@ class _SearchButtonState extends State<SearchButton> {
     );
   }
 
-  // Text field
-  TextField textField(double screenWidth) {
-    return TextField(
-      textInputAction: TextInputAction.search,
-      controller: controller,
-      onChanged: (String value) {
-        setState(() {
-          filteredSuggestions = widget.cityName.value
-              .where(
-                  (city) => city.toLowerCase().startsWith(value.toLowerCase()))
-              .toList();
-        });
-      },
-      onSubmitted: (String? text) {
-        _updateSelectedCity();
-      },
-      decoration: const InputDecoration(
-        enabledBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.transparent),
+  Widget textField(double screenWidth) {
+    return GestureDetector(
+      child: TextField(
+        onTap: () {
+          if (widget.selectedCity.value == null) controller.text = "";
+        },
+        textInputAction: TextInputAction.search,
+        controller: controller,
+        style: TextStyle(
+          color:
+              controller.text == "Select a city" ? Colors.grey : Colors.black,
         ),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.transparent),
-        ),
-        hintText: 'Select a city',
-        labelStyle: TextStyle(
-          color: Colors.white,
-          fontSize: 14,
+        onChanged: (String value) {
+          setState(() {
+            filteredSuggestions = widget.cityName.value
+                .where((city) =>
+                    city.toLowerCase().startsWith(value.toLowerCase()))
+                .toList();
+          });
+        },
+        onSubmitted: (String? text) {
+          _updateSelectedCity();
+        },
+        decoration: const InputDecoration(
+          enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.transparent),
+          ),
+          focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.transparent),
+          ),
+          hintText: 'Select a city',
+          hintStyle: TextStyle(
+            color: Colors.grey,
+          ),
+          labelStyle: TextStyle(
+            color: Colors.white,
+            fontSize: 14,
+          ),
         ),
       ),
     );

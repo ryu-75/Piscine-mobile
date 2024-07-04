@@ -63,7 +63,7 @@ class _CityWidgetState extends State<CityWidget> {
   @override
   Widget build(BuildContext context) {
     List<String>? splitLocation = widget.city?.split(",");
-    if (widget.filteredSuggestions.isNotEmpty && splitLocation != null) {
+    if (widget.filteredSuggestions.isNotEmpty && (splitLocation != null)) {
       return Flexible(
         flex: 1,
         child: SingleChildScrollView(
@@ -72,7 +72,7 @@ class _CityWidgetState extends State<CityWidget> {
             children: [
               const SizedBox(height: 2),
               Text(
-                splitLocation[0],
+                splitLocation![0],
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
